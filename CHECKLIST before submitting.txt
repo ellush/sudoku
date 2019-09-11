@@ -1,0 +1,4 @@
+*review is_legal_placement func inside Backtrack_solver
+*review set func inside Game
+*change so that when a cell is wrong *another* cell becomes wrong
+*check if u can make stack fasster, maybe by using pointers instead of copies
