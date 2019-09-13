@@ -5,4 +5,4 @@
 #include "gurobi_c.h"
 #include <string.h>
 
-bool ILP_solver(Board B, int n, int m);
+bool ILP_solver(Board B, int n, int m, bool apply);

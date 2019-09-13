@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include "Game.h"
+#include "user_commands.h"
 /*#include "ILP_solver.h"*/
 
 bool mark_errors = true;
@@ -72,7 +73,10 @@ int main(int argc, char *argv[]){
 			reset(B, &undo_list);			
 		}
 		if(command==6){
-			ILP_solver(B,n,m);			
+			solve_ILP(B,n,m);			
+		}
+		if(command==7){
+			validate(B,n,m);			
 		}
 	}
 	

@@ -5,7 +5,7 @@
 #include "gurobi_c.h"
 #include <string.h>
 
-bool ILP_solver(Board B, int n, int m){
+bool ILP_solver(Board B, int n, int m, bool apply){
     /* These lines should be replaced */
     int BOARDSIZE = n*m;
     int BLOCKSIZE_X = n;
@@ -16,9 +16,9 @@ bool ILP_solver(Board B, int n, int m){
 	int       ind[BOARDSIZE];
 	double    val[BOARDSIZE];
 	char      vtype[BOARDSIZE*BOARDSIZE*BOARDSIZE];
-	char     *names[BOARDSIZE*BOARDSIZE*BOARDSIZE];
+	/*char     *names[BOARDSIZE*BOARDSIZE*BOARDSIZE];
 	char      namestorage[10*BOARDSIZE*BOARDSIZE*BOARDSIZE];
-	char     *cursor;
+	char     *cursor;*/
 	int       optimstatus;
 	double    objval;
 	int       i, j, k, v, ig, jg, count;
@@ -26,8 +26,6 @@ bool ILP_solver(Board B, int n, int m){
 	double    sol[BOARDSIZE*BOARDSIZE*BOARDSIZE];	
 	double    dof_map[BOARDSIZE*BOARDSIZE*BOARDSIZE];
 	int       dof_count = 0;
-
-    printf("\nHere\n");
 
 	/* Initialize condensed array for distinguish between redundant and required variables. */
 	for (i = 0; i < BOARDSIZE*BOARDSIZE*BOARDSIZE; i++) {
@@ -56,16 +54,17 @@ bool ILP_solver(Board B, int n, int m){
 		}
 	}
 
-	cursor = namestorage;
+	/*cursor = namestorage;*/
 	/* Index the variables solved for */
 	for (i = 0; i < BOARDSIZE; i++) {
 		for (j = 0; j < BOARDSIZE; j++) {
 			for (v = 0; v < BOARDSIZE; v++) {
 				if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v]<0) {
 					vtype[dof_count] = GRB_BINARY;
+					/*
 					names[dof_count] = cursor;
 					sprintf(names[dof_count], "x[%d,%d,%d]", i, j, v+1);
-					cursor += strlen(names[dof_count]) + 1;
+					cursor += strlen(names[dof_count]) + 1;*/
 					dof_count++;
 					dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] = dof_count;                   
 				}
@@ -81,24 +80,24 @@ bool ILP_solver(Board B, int n, int m){
 	/* Create new model */	
 	/*  No lb needed as only unconstrained variables are solved for */
 	error = GRBnewmodel(env, &model, "sudoku", dof_count, NULL, NULL, NULL,
-						vtype, names);
+						vtype, NULL);
 	if (error) goto QUIT;
 
 	/* Each cell gets a value */
 	for (i = 0; i < BOARDSIZE; i++) {
 		for (j = 0; j < BOARDSIZE; j++) {
-		count = 0;
-		for (v = 0; v < BOARDSIZE; v++) {
-			if (dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]) {
-			ind[count] = dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]-1;
-			val[count] = 1.0;
-			count++;
+			count = 0;
+			for (v = 0; v < BOARDSIZE; v++) {
+				if (dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]) {
+					ind[count] = dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]-1;
+					val[count] = 1.0;
+					count++;
+				}
 			}
-		}
-		if (count) {
-			error = GRBaddconstr(model, count, ind, val, GRB_EQUAL, 1.0, NULL); 
-			if (error) goto QUIT;
-		}
+			if (count) {
+				error = GRBaddconstr(model, count, ind, val, GRB_EQUAL, 1.0, NULL); 
+				if (error) goto QUIT;
+			}
 		}
 	}
 
@@ -138,14 +137,16 @@ bool ILP_solver(Board B, int n, int m){
 		}
 	}
 
+	
 	/* Each value must appear once in each subgrid */
 	for (v = 0; v < BOARDSIZE; v++) {        
-		for (ig = 0; ig < BLOCKSIZE_Y; ig++) {
-			for (jg = 0; jg < BLOCKSIZE_X; jg++) {        
+		for (ig = 0; ig < n; ig++) {
+			for (jg = 0; jg < m; jg++) {        
 				count = 0;
 				for (i = ig*BLOCKSIZE_Y; i < (ig+1)*BLOCKSIZE_Y; i++) {
 					for (j = jg*BLOCKSIZE_X; j < (jg+1)*BLOCKSIZE_X; j++) {
 						if (dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]) {
+							/*printf("dof=%d\n",(int) dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]);*/
 							ind[count] = dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]-1;
 							val[count] = 1.0;
 							count++;
@@ -153,16 +154,17 @@ bool ILP_solver(Board B, int n, int m){
 					}
 				}
 				if (count) {
+					/*printf("Count: %d\n",count);*/
 					error = GRBaddconstr(model, count, ind, val, GRB_EQUAL, 1.0, NULL);
 					if (error) goto QUIT;
 				}
 			}
 		}
-	}
-	
+	}		
+
 	/*  debug constrains */
-	GRBupdatemodel(model);
-	GRBwrite(model,"debug.lp");
+	/* GRBupdatemodel(model);
+	GRBwrite(model,"debug.lp"); */
 
 	/* Turn off console logging */
 	error = GRBsetintparam(GRBgetenv(model), "OutputFlag", 0);
@@ -173,18 +175,18 @@ bool ILP_solver(Board B, int n, int m){
 	if (error) goto QUIT;
 
 	/* Write model to 'sudoku.lp' */
-	error = GRBwrite(model, "sudoku.lp");
-	if (error) goto QUIT;
+	/* error = GRBwrite(model, "sudoku.lp");
+	if (error) goto QUIT; */
 
 	/* Capture solution information */
 	error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &optimstatus);
-	if (error) goto QUIT;
-
+	if (error) goto QUIT;	
+	
 	error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
 	if (error) goto QUIT;
 
 	/* get the solution - the assignment to each variable */
-	/* 3-- number of variables, the size of "sol" should match */
+	/* dof_count id the number of variables, the size of "sol" should match */
 	error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, dof_count, sol);
 	if (error) {
 		printf("ERROR %d GRBgetdblattrarray(): %s\n", error, GRBgeterrormsg(env));
@@ -193,10 +195,8 @@ bool ILP_solver(Board B, int n, int m){
 
 	/* printf("\nOptimization complete\n"); */
 	if (optimstatus == GRB_OPTIMAL){
-	/*  printf("Optimal objective: %.4e\n", objval); */
-
+	/*  printf("Optimal objective: %.4e\n", objval); */		
 		printf("\n~~~~ Begining ILP Solver Debug ~~~~~:\n");
-
 		printf("\nOriginal board:\n");
 		for (i = 0; i < BOARDSIZE; i++) {
 			for (j = 0; j < BOARDSIZE; j++) {
@@ -205,9 +205,8 @@ bool ILP_solver(Board B, int n, int m){
 				else
 					printf("%d ", B[i][j].num );
 			}
-		printf("\n");
+			printf("\n");
 		}
-
 		printf("\nSolution:\n");
 		for (i = 0; i < BOARDSIZE; i++) {
 			for (j = 0; j < BOARDSIZE; j++) {
@@ -215,8 +214,7 @@ bool ILP_solver(Board B, int n, int m){
 					for (v = 0; v < BOARDSIZE; v++) {
 						if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v])          
 							if (sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ]>0) {								
-								B[i][j].num = v+1;
-								printf("%d ", B[i][j].num);
+								printf("%d ", v+1);
 							}
 					}
 				else
@@ -224,11 +222,23 @@ bool ILP_solver(Board B, int n, int m){
 			}
 			printf("\n");
 		}
-		printf("\n");
-
 		printf("\n~~~~ End of ILP Solver Debug ~~~~~:\n");
 
-			
+
+		/* Apply solution to board */
+		if (apply){
+			for (i = 0; i < BOARDSIZE; i++) {
+				for (j = 0; j < BOARDSIZE; j++) {
+					if (B[i][j].num-1 < 0)
+						for (v = 0; v < BOARDSIZE; v++) {
+							if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v])          
+								if (sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ]>0) {														
+									B[i][j].num = v+1;								
+								}
+						}				
+				}		
+			}
+		}			
 	} else if (optimstatus == GRB_INF_OR_UNBD)
 		printf("Model is infeasible or unbounded\n");
 	else
