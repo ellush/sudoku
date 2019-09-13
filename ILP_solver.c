@@ -15,24 +15,21 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 	GRBmodel *model = NULL;		
 	int       ind[BOARDSIZE];
 	double    val[BOARDSIZE];
-	char      vtype[BOARDSIZE*BOARDSIZE*BOARDSIZE];
-	/*char     *names[BOARDSIZE*BOARDSIZE*BOARDSIZE];
-	char      namestorage[10*BOARDSIZE*BOARDSIZE*BOARDSIZE];
-	char     *cursor;*/
+	char      *vtype;	
 	int       optimstatus;
 	double    objval;
 	int       i, j, k, v, ig, jg, count;
 	int       error = 0;
-	double    sol[BOARDSIZE*BOARDSIZE*BOARDSIZE];	
+	double    *sol;	
 	double    dof_map[BOARDSIZE*BOARDSIZE*BOARDSIZE];
 	int       dof_count = 0;
 
-	/* Initialize condensed array for distinguish between redundant and required variables. */
+	/* Initialize array to map and distinguish between redundant and required variables. */
 	for (i = 0; i < BOARDSIZE*BOARDSIZE*BOARDSIZE; i++) {
 		dof_map[i]=-1;
 	}
 
-	/*  Create an empty model, while removing redundant variables */	
+	/*  Mark redundant variables */	
 	for (i = 0; i < BOARDSIZE; i++) {
 		for (j = 0; j < BOARDSIZE; j++) {			
 			if (B[i][j].num-1 >= 0) {				
@@ -54,24 +51,23 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 		}
 	}
 
-	/*cursor = namestorage;*/
 	/* Index the variables solved for */
 	for (i = 0; i < BOARDSIZE; i++) {
 		for (j = 0; j < BOARDSIZE; j++) {
 			for (v = 0; v < BOARDSIZE; v++) {
-				if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v]<0) {
-					vtype[dof_count] = GRB_BINARY;
-					/*
-					names[dof_count] = cursor;
-					sprintf(names[dof_count], "x[%d,%d,%d]", i, j, v+1);
-					cursor += strlen(names[dof_count]) + 1;*/
+				if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v]<0) {					
 					dof_count++;
 					dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] = dof_count;                   
 				}
 			}
 		}
-	} 
+	}
 
+	/* Allocate memory for solution vectors: */
+	sol = (double*)malloc(dof_count * sizeof(double));
+	vtype = (char*)malloc(dof_count * sizeof(char));
+	for (i = 0; i < dof_count; i++)
+		vtype[i] = GRB_BINARY;
 
 	/* Create environment */
 	error = GRBloadenv(&env, "sudoku.log");
@@ -82,6 +78,9 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 	error = GRBnewmodel(env, &model, "sudoku", dof_count, NULL, NULL, NULL,
 						vtype, NULL);
 	if (error) goto QUIT;
+
+
+	/* Apply Constrains: */
 
 	/* Each cell gets a value */
 	for (i = 0; i < BOARDSIZE; i++) {
@@ -136,7 +135,6 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 			}
 		}
 	}
-
 	
 	/* Each value must appear once in each subgrid */
 	for (v = 0; v < BOARDSIZE; v++) {        
@@ -145,8 +143,7 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 				count = 0;
 				for (i = ig*BLOCKSIZE_Y; i < (ig+1)*BLOCKSIZE_Y; i++) {
 					for (j = jg*BLOCKSIZE_X; j < (jg+1)*BLOCKSIZE_X; j++) {
-						if (dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]) {
-							/*printf("dof=%d\n",(int) dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]);*/
+						if (dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]) {							
 							ind[count] = dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]-1;
 							val[count] = 1.0;
 							count++;
@@ -154,7 +151,6 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 					}
 				}
 				if (count) {
-					/*printf("Count: %d\n",count);*/
 					error = GRBaddconstr(model, count, ind, val, GRB_EQUAL, 1.0, NULL);
 					if (error) goto QUIT;
 				}
@@ -188,15 +184,16 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 	/* get the solution - the assignment to each variable */
 	/* dof_count id the number of variables, the size of "sol" should match */
 	error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, dof_count, sol);
-	if (error) {
+	if (error) goto QUIT;
+	/* if (error) {
 		printf("ERROR %d GRBgetdblattrarray(): %s\n", error, GRBgeterrormsg(env));
-		return -1;
-	}
+		return -1;		
+	} */
 
-	/* printf("\nOptimization complete\n"); */
 	if (optimstatus == GRB_OPTIMAL){
+	
 	/*  printf("Optimal objective: %.4e\n", objval); */		
-		printf("\n~~~~ Begining ILP Solver Debug ~~~~~:\n");
+		/* printf("\n~~~~ Begining ILP Solver Debug ~~~~~:\n");
 		printf("\nOriginal board:\n");
 		for (i = 0; i < BOARDSIZE; i++) {
 			for (j = 0; j < BOARDSIZE; j++) {
@@ -222,7 +219,7 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 			}
 			printf("\n");
 		}
-		printf("\n~~~~ End of ILP Solver Debug ~~~~~:\n");
+		printf("\n~~~~ End of ILP Solver Debug ~~~~~:\n"); */
 
 
 		/* Apply solution to board */
@@ -238,14 +235,21 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 						}				
 				}		
 			}
-		}			
+		}
+
+		return true;
+
 	} else if (optimstatus == GRB_INF_OR_UNBD)
 		printf("Model is infeasible or unbounded\n");
 	else
 		printf("Optimization was stopped early\n");
-	printf("\n");
+			
 
 	QUIT:
+
+	/* Free memory solution vectors */
+	free(vtype);
+	free(sol);
 
 	/* Error reporting */
 	if (error) {
@@ -253,11 +257,12 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 		return false;
 	}
 
+	/* TO CHECK: Can the following be done before error reporting?  */
 	/* Free model */
 	GRBfreemodel(model);
 
 	/* Free environment */
 	GRBfreeenv(env);
 
-	return true;
+	return false;
 }
