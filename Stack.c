@@ -32,13 +32,15 @@ void push(stack *stk, data newdata){
 }
 
 data pop(stack *stk){
+	data d;
+	node *head = NULL;
+	
 	if(stk->top == NULL){
 		printf("\n trying to pop an empty stack! \n");
 	}
 	assert(stk->top != NULL); /*trying to pop an empty stack!*/
 	
-	data d;
-	node *head = NULL;
+	
 	
 	d = stk->top->d;
 	head = stk->top;

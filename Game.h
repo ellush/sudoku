@@ -13,3 +13,8 @@ int set(Board B, int row, int col, int val, int n,int  m, list *lst);
 
 /*this autofill func uses 3 stacks and the set func*/
 void autofill(Board B, int n, int m, list *lst);
+
+/*func checks if there exists a wrong cell*/
+bool has_error(Board B,int n,int m);
+
+void mark_wrong_cells(Board B, int n, int m);

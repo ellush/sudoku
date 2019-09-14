@@ -53,12 +53,13 @@ void sub_add(sub_list *lst, int oldval, int newval, int x, int y){
 }
 
 void sub_remove_head(sub_list *lst){
+	sub_elem *first = NULL;
 	if(lst->head == NULL){
 		printf("Error! trying to remove an empty sub_List! \n");
 	}
 	assert(lst->head != NULL); /*trying to remove an empty sub_List!*/
 		
-	sub_elem *first = NULL;	
+		
 	first = lst->head;
 	lst->head = lst->head->next;
 	if(lst->head!=NULL){

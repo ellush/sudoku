@@ -2,3 +2,6 @@
 *review set func inside Game
 *change so that when a cell is wrong *another* cell becomes wrong
 *check if u can make stack fasster, maybe by using pointers instead of copies
+*make sure user cant load a file with a wrong and fixed cell, wrong cells cant be fixed, two conflictinig fixed cells is an error.
+*loading a fixed 0 cell should be impossible
+*add undo/redo to generate and guess

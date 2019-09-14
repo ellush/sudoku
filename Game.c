@@ -6,7 +6,7 @@
 #include "print.h"
 #include "UndoRedo.h"
 
-void check_wrong_cells(Board B, int n, int m){
+void mark_wrong_cells(Board B, int n, int m){
 	int i,j;
 	for(i=0; i < n*m; i++){
 		for(j=0; j< n*m; j++){
@@ -22,27 +22,27 @@ void check_wrong_cells(Board B, int n, int m){
 
 /*this set func recives parameters *as given by the user*, corrects them to 1- based,
 this func does not print Board*/
-/*this func needs to be reveiwed after error module was written*/
 int set(Board B, int row, int col, int val, int n,int  m, list *lst){
 	/*fix parameters to 0-based*/
 	row--;
 	col--;
 	if(row > n*m-1 || row < 0){ 
-		printf("Error: row coordinate is out of bounds\n");
+		printf("Error: row coordinate is not in range 1 - %d\n",n*m);
 		return -1;
 	}
 	if(col > n*m-1 || col < 0){
-		printf("Error: row coordinate is out of bounds\n");
-		return -1;
-	}
-	if(B[row][col].fixed == true){
-		printf("Error: cell is fixed\n");
+		printf("Error: column coordinate is not in range 1 - %d\n",n*m);
 		return -1;
 	}
 	if(val > n*m || val < 0){
 		printf("Error: value is not in range 0 - %d\n", n*m);
 		return -1;
 	}
+	if(B[row][col].fixed == true){
+		printf("Error: cell is fixed\n");
+		return -1;
+	}
+	
 	new_move(lst);
 	/*push to undo list*/
 	add_change(lst, B[row][col].num , val, row, col);
@@ -50,7 +50,7 @@ int set(Board B, int row, int col, int val, int n,int  m, list *lst){
 	/*make change*/
 	B[row][col].num = val;
 	
-	check_wrong_cells(B,n,m);
+	mark_wrong_cells(B,n,m);
 	return 1;
 }
 /*func checks if there exists a wrong cell*/
@@ -81,17 +81,13 @@ bool has_single_val(Board B,int row,int col,int *val, int n, int m){
 	return false;
 }
 
-/*this autofill func uses 3 stacks and the set func*/
+/*this autofill func uses 3 stacks */
 void autofill(Board B, int n, int m, list *lst){
 	int i,j,val;
 	stack s_row, s_col, s_val;
 	initialize_double_stack(&s_row,&s_col);
 	initialize_stack(&s_val);
 	
-	if(has_error(B,n,m)){
-		printf("Error, Board is erroneous, can not autofill.\n");
-		return;
-	}
 	/*start move*/
 	new_move(lst);
 	for(i=0; i < n*m; i++){
@@ -115,6 +111,6 @@ void autofill(Board B, int n, int m, list *lst){
 		
 		printf("set %d in cell <%d,%d>\n",val, i+1,j+1); 
 	}
-	check_wrong_cells(B,n,m);
+	mark_wrong_cells(B,n,m);
 	return;
 }

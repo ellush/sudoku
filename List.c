@@ -69,12 +69,14 @@ void add_change(list *lst, int oldval, int newval, int x, int y){
 }
 
 void remove_head(list *lst){
+	elem *first = NULL;	
+	
 	if(lst->head == NULL){
 		printf("Error! trying to remove an empty sub_List! \n");
 	}
 	assert(lst->head != NULL); /*trying to remove an empty sub_List!*/
 		
-	elem *first = NULL;	
+	
 	first = lst->head;
 	
 	/*if cur is on head, move cur*/
@@ -90,13 +92,13 @@ void remove_head(list *lst){
 	delete_sub_list(&(first->l));
 	free(first);
 }
-
+/* debug func*/
 void print_list(list *lst){
 	elem* cur = lst->head;
 	int i = 1;
 	while(cur!=NULL){
 		if(cur == lst->cur){
-			printf("cur->", i);
+			printf("cur->");
 		}
 		printf("Move %d:\n", i);
 		print_sub_list(&(cur->l));
@@ -108,6 +110,11 @@ void print_list(list *lst){
 void delete_list(list *lst){
 	elem* cur = lst->head;
 	elem* next;
+	
+	if(lst == NULL){
+		return;
+	}
+	
 	while(cur!=NULL){
 		next = cur->next;
 		delete_sub_list(&(cur->l));
