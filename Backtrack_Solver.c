@@ -85,7 +85,7 @@ bool set_next_val(Board B, int n,int m, int row, int col){
 
 /*fills every cell with the first legal value it finds. if there are none or board is full, returns*/
 int solve(Board B, int n, int m, stack *s_row_p, stack *s_col_p){
-	int i,row,col;
+	int row,col;
 	
 	while(find_next_cell(B, n*m, &row, &col)){
 		
@@ -101,10 +101,10 @@ int solve(Board B, int n, int m, stack *s_row_p, stack *s_col_p){
 	return 1;
 }
 
-/*count_solutions assumes the current board is in a legal state, meaning no error cells*/
+/*count_solutions assumes the current board is in a correct state, meaning no error cells*/
 int count_solutions(Board B, int n, int m){
 	
-	int i, row, col;
+	int row, col;
 	int counter = 0;
 	
 	/* use two stacks as one*/

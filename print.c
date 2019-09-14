@@ -4,18 +4,6 @@
 #include <ctype.h>
 #include "Game_Board.h"
 
-
-void clearboard(Board B, int n, int m){
-	int i,j;
-	for(i = 0; i < m*n; i++){
-		for(j = 0; j < m*n; j++){
-			B[i][j].fixed = false;
-			B[i][j].wrong = false;
-			B[i][j].num = 0;
-		}
-	}
-}
-
 void draw_separator_row(int n, int m){
 	int i;
 	int numofdash = 4*m*n + m + 1; 
