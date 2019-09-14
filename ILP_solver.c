@@ -6,22 +6,21 @@
 #include <string.h>
 
 /* Add autofill */
-bool ILP_solver(Board B, int n, int m, bool apply){
-	/* These lines should be replaced */
-	int BOARDSIZE = n*m;
-	int BLOCKSIZE_X = n;
-	int BLOCKSIZE_Y = m;
-
+bool ILP_solver(Board B, int n, int m, bool apply, bool ILP){
+	
+	int BOARDSIZE = n*m;	
 	GRBenv   *env   = NULL;
 	GRBmodel *model = NULL;		
 	int       ind[BOARDSIZE];
 	double    val[BOARDSIZE];
-	char      *vtype;	
+	double    *obj = NULL;
+	double    *ub = NULL;
+	char      *vtype = NULL;	
 	int       optimstatus;
 	double    objval;
 	int       i, j, k, v, ig, jg, count;
 	int       error = 0;
-	double    *sol;	
+	double    *sol = NULL;	
 	double    dof_map[BOARDSIZE*BOARDSIZE*BOARDSIZE];
 	int       dof_count = 0;
 	bool      success = false;
@@ -42,8 +41,8 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 							dof_map[k*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] = 0;
 							dof_map[i*BOARDSIZE*BOARDSIZE+k*BOARDSIZE+v] = 0;
 						}
-						for (ig = (i/BLOCKSIZE_Y)*BLOCKSIZE_Y ; ig < (i/BLOCKSIZE_Y +1)*BLOCKSIZE_Y ; ig++) {              
-							for (jg = (j/BLOCKSIZE_X)*BLOCKSIZE_X ; jg < (j/BLOCKSIZE_X +1)*BLOCKSIZE_X ; jg++) { 
+						for (ig = (i/m)*m ; ig < (i/m +1)*m ; ig++) {              
+							for (jg = (j/n)*n ; jg < (j/n +1)*n ; jg++) { 
 								dof_map[ig*BOARDSIZE*BOARDSIZE+jg*BOARDSIZE+v] = 0;
 							}
 						}
@@ -64,23 +63,30 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 			}
 		}
 	}
-
-	/* Allocate memory for solution vectors: */
-	sol = (double*)malloc(dof_count * sizeof(double));
-	vtype = (char*)malloc(dof_count * sizeof(char));
-	for (i = 0; i < dof_count; i++)
-		vtype[i] = GRB_BINARY;
-
+	
 	/* Create environment */
 	error = GRBloadenv(&env, NULL);
 	if (error) goto QUIT;
 
-	/* Create new model */	
-	/*  No lb needed as only unconstrained variables are solved for */
-	error = GRBnewmodel(env, &model, "sudoku", dof_count, NULL, NULL, NULL,
-						vtype, NULL);
-	if (error) goto QUIT;
+	/* Create new model */
+	if (ILP){
+		vtype = (char*)malloc(dof_count * sizeof(char));
+		for (i = 0; i < dof_count; i++)
+			vtype[i] = GRB_BINARY;
 
+		/*  No lb,ub needed as only unconstrained binary variables are solved for */
+		error = GRBnewmodel(env, &model, "sudoku ILP", dof_count, NULL, NULL, NULL, vtype, NULL);
+		free(vtype);
+	} else {
+		obj = (double*)malloc(dof_count * sizeof(double));
+		ub  = (double*)malloc(dof_count * sizeof(double));
+		for (i = 0; i < dof_count; i++)
+			ub[i] = 1.0;
+		error = GRBnewmodel(env, &model, "sudoku LP ", dof_count, NULL, NULL, ub, NULL, NULL);
+		free(obj);
+		free(ub);
+	}
+	if (error) goto QUIT;
 
 	/* Apply Constrains: */
 
@@ -143,8 +149,8 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 		for (ig = 0; ig < n; ig++) {
 			for (jg = 0; jg < m; jg++) {        
 				count = 0;
-				for (i = ig*BLOCKSIZE_Y; i < (ig+1)*BLOCKSIZE_Y; i++) {
-					for (j = jg*BLOCKSIZE_X; j < (jg+1)*BLOCKSIZE_X; j++) {
+				for (i = ig*m; i < (ig+1)*m; i++) {
+					for (j = jg*n; j < (jg+1)*n; j++) {
 						if (dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]) {							
 							ind[count] = dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]-1;
 							val[count] = 1.0;
@@ -161,9 +167,9 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 	}		
 
 	/*  debug constrains */
-	/* GRBupdatemodel(model);
-	GRBwrite(model,"debug.lp"); */
-
+	GRBupdatemodel(model);
+	GRBwrite(model,"debug.lp");
+	
 	/* Turn off console logging */
 	error = GRBsetintparam(GRBgetenv(model), "OutputFlag", 0);
 	if (error) goto QUIT;
@@ -174,21 +180,20 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 	error = GRBoptimize(model);
 	if (error) goto QUIT;
 
-	/* Write model to 'sudoku.lp' */
-	/* error = GRBwrite(model, "sudoku.lp");
-	if (error) goto QUIT; */
-
 	/* Get the optimization status */
 	error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &optimstatus);
-	if (error) goto QUIT;	
-
-	/* Get the value of the objective function for the computed solution */
-	/* Returns a non-zero error result if no solution was found */
-	error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
-	if (error) goto QUIT;
+	if (error) goto QUIT;		
 
 	/* Process the optimization results */
 	if (optimstatus == GRB_OPTIMAL){
+
+		/* Get the value of the objective function for the computed solution */
+		/* Returns a non-zero error result if no solution was found */
+		error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
+		if (error) goto QUIT;
+
+		/* Allocate memory for the solution vector: */
+		sol = (double*)malloc(dof_count * sizeof(double));
 		
 		/* If here -> The optimization was successful */
 
@@ -234,7 +239,8 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 					if (B[i][j].num-1 < 0)
 						for (v = 0; v < BOARDSIZE; v++) {
 							if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v])          
-								if (sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ]>0) {														
+								if (sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ]>0) {		
+									printf("sol:%f\n",sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ]);											
 									B[i][j].num = v+1;								
 								}
 						}				
@@ -242,25 +248,27 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 			}
 		}
 
+		/* Write model solution' */
+		GRBupdatemodel(model);
+		error = GRBwrite(model, "sudoku.sol");
+
 		success = true;
 
-	} else if (optimstatus == GRB_INF_OR_UNBD)
-		printf("ILP (Gurobi) failed: Model is infeasible or unbounded\n");
+	} else if (optimstatus == GRB_INF_OR_UNBD || optimstatus == GRB_INFEASIBLE || optimstatus == GRB_UNBOUNDED)
+		printf("LP (Gurobi) failed: Model is infeasible or unbounded (Code: %d)\n",optimstatus);
 	else
-		printf("ILP (Gurobi) failed: Optimization was stopped early\n");
-
+		printf("LP (Gurobi) failed: Optimization failed (Code: %d)\n",optimstatus);	
 
 	QUIT:
-
+		
 	/* Fatal error reporting */
 	if (error) {
-		printf("ILP (Gurobi) fatal ERROR: %s\n", GRBgeterrormsg(env));	
+		printf("LP (Gurobi) fatal ERROR: %s\n", GRBgeterrormsg(env));	
 	}	
 
-	/* Free memory solution vectors */
-	free(vtype);
+	/* Free memory solution vectors */	
 	free(sol);
-
+	
 	/* Free model */
 	if ( model != NULL )
 		GRBfreemodel(model);
