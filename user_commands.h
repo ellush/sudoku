@@ -9,8 +9,8 @@
 
 bool validate(Board B, int n, int m);
 
-bool generate(Board B, int n, int m,  int X, int Y);
+void generate(Board B, int n, int m,  int X, int Y);
 
-bool hint(Board B, int n, int m, int X, int Y);
+void hint(Board B, int n, int m, int X, int Y);
 
 bool solve_ILP(Board B, int n, int m);
