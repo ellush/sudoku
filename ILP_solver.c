@@ -5,12 +5,13 @@
 #include "gurobi_c.h"
 #include <string.h>
 
+/* Add autofill */
 bool ILP_solver(Board B, int n, int m, bool apply){
-    /* These lines should be replaced */
-    int BOARDSIZE = n*m;
-    int BLOCKSIZE_X = n;
-    int BLOCKSIZE_Y = m;
-    
+	/* These lines should be replaced */
+	int BOARDSIZE = n*m;
+	int BLOCKSIZE_X = n;
+	int BLOCKSIZE_Y = m;
+
 	GRBenv   *env   = NULL;
 	GRBmodel *model = NULL;		
 	int       ind[BOARDSIZE];
@@ -23,6 +24,7 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 	double    *sol;	
 	double    dof_map[BOARDSIZE*BOARDSIZE*BOARDSIZE];
 	int       dof_count = 0;
+	bool      success = false;
 
 	/* Initialize array to map and distinguish between redundant and required variables. */
 	for (i = 0; i < BOARDSIZE*BOARDSIZE*BOARDSIZE; i++) {
@@ -70,7 +72,7 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 		vtype[i] = GRB_BINARY;
 
 	/* Create environment */
-	error = GRBloadenv(&env, "sudoku.log");
+	error = GRBloadenv(&env, NULL);
 	if (error) goto QUIT;
 
 	/* Create new model */	
@@ -135,7 +137,7 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 			}
 		}
 	}
-	
+
 	/* Each value must appear once in each subgrid */
 	for (v = 0; v < BOARDSIZE; v++) {        
 		for (ig = 0; ig < n; ig++) {
@@ -167,6 +169,8 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 	if (error) goto QUIT;
 
 	/* Optimize model */
+	/* This routine performs the optimization and populates internal model attributes:
+	optimization status, solution, etc. */
 	error = GRBoptimize(model);
 	if (error) goto QUIT;
 
@@ -174,24 +178,25 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 	/* error = GRBwrite(model, "sudoku.lp");
 	if (error) goto QUIT; */
 
-	/* Capture solution information */
+	/* Get the optimization status */
 	error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &optimstatus);
 	if (error) goto QUIT;	
-	
+
+	/* Get the value of the objective function for the computed solution */
+	/* Returns a non-zero error result if no solution was found */
 	error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
 	if (error) goto QUIT;
 
-	/* get the solution - the assignment to each variable */
-	/* dof_count id the number of variables, the size of "sol" should match */
-	error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, dof_count, sol);
-	if (error) goto QUIT;
-	/* if (error) {
-		printf("ERROR %d GRBgetdblattrarray(): %s\n", error, GRBgeterrormsg(env));
-		return -1;		
-	} */
-
+	/* Process the optimization results */
 	if (optimstatus == GRB_OPTIMAL){
-	
+		
+		/* If here -> The optimization was successful */
+
+		/* Read the solution - the assignment to each variable */
+		/* dof_count id the number of variables, the size of "sol" should match */
+		error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, dof_count, sol);
+		if (error) goto QUIT;
+
 	/*  printf("Optimal objective: %.4e\n", objval); */		
 		/* printf("\n~~~~ Begining ILP Solver Debug ~~~~~:\n");
 		printf("\nOriginal board:\n");
@@ -221,7 +226,7 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 		}
 		printf("\n~~~~ End of ILP Solver Debug ~~~~~:\n"); */
 
-
+		
 		/* Apply solution to board */
 		if (apply){
 			for (i = 0; i < BOARDSIZE; i++) {
@@ -237,32 +242,36 @@ bool ILP_solver(Board B, int n, int m, bool apply){
 			}
 		}
 
-		return true;
+		success = true;
 
 	} else if (optimstatus == GRB_INF_OR_UNBD)
-		printf("Model is infeasible or unbounded\n");
+		printf("ILP (Gurobi) failed: Model is infeasible or unbounded\n");
 	else
-		printf("Optimization was stopped early\n");
-			
+		printf("ILP (Gurobi) failed: Optimization was stopped early\n");
+
 
 	QUIT:
+
+	/* Fatal error reporting */
+	if (error) {
+		printf("ILP (Gurobi) fatal ERROR: %s\n", GRBgeterrormsg(env));	
+	}	
 
 	/* Free memory solution vectors */
 	free(vtype);
 	free(sol);
 
-	/* Error reporting */
-	if (error) {
-		printf("ERROR: %s\n", GRBgeterrormsg(env));
-		return false;
-	}
-
-	/* TO CHECK: Can the following be done before error reporting?  */
 	/* Free model */
-	GRBfreemodel(model);
+	if ( model != NULL )
+		GRBfreemodel(model);
 
 	/* Free environment */
-	GRBfreeenv(env);
-
-	return false;
+	if ( env != NULL )
+		GRBfreeenv(env);	
+	
+	/* success is true only if optimization succeeded AND solution was successfully read */
+	if (success)
+		return true;
+	else
+		return false;
 }
