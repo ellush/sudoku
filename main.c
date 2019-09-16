@@ -16,7 +16,7 @@ int main(){
 	
 	do{
 		
-		play_game(b,&mode,&n,&m, &undo_lst);
+		play_game(&b,&mode,&n,&m, &undo_lst);
 		
 	}while(true); /*only exit through exit method */ 
 	

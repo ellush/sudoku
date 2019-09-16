@@ -30,9 +30,10 @@ void sub_add(sub_list *lst, int oldval, int newval, int x, int y){
 	
 	sub_elem *newelem = NULL;
 	newelem = (sub_elem*)malloc(sizeof(sub_elem));
-	
+	/*check if malloc failed*/
 	if(newelem == NULL){
-		printf("error! malloc failed, in 'sub_add' func in sub_List module");
+		printf("Error: malloc failed, in 'sub_add' func in sub_List module");
+		printf("Exiting...\n");
 		exit(1);
 	}
 	

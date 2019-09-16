@@ -40,8 +40,10 @@ void add_move(list *lst){
 	elem *newelem = NULL;
 	newelem = (elem*)malloc(sizeof(elem));
 	
+	/*check if malloc failed*/
 	if(newelem == NULL){
-		printf("error! malloc failed, in 'sub_add' func in sub_List module");
+		printf("Error: malloc failed, in 'add_move' func in List module");
+		printf("Exiting...\n");
 		exit(1);
 	}
 	

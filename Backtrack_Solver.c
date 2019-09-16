@@ -24,12 +24,6 @@ bool find_next_cell(Board B,int N, int* row, int* col){
 bool is_legal_placement(Board B ,int placement_row, int placement_col, int val, int n, int m){
 	int row, col;
 	
-	/*place is not fixed*/
-	if(B[placement_row][placement_col].fixed != false){
-		printf("Error: cell is fixed\n");
-		return false;
-	}
-	
 	/*if val = 0 there are no constraints*/
 	if(val == 0){
 		return true;
@@ -42,7 +36,7 @@ bool is_legal_placement(Board B ,int placement_row, int placement_col, int val, 
 				return false;
 			}
 		}
-	}	
+	}
 	
 	/* Column constraints*/
     for(row=0; row < n*m; row++){

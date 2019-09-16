@@ -5,13 +5,14 @@
 #include "commands_modes.h" //line should move to interface
 #include "Commands.c"
 //#include "Interface.h"
+/*debugging*/
+#include "testSave_Load.c"
 
-
-void play_game(Board b, int *modep,int *np, int *mp, list *undo_lst){
+void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 	int command[4] = {0,0,0,0};
 	char *filepath; /*command string*/
 	
-	//get_command(command, filepath);
+	get_command(command, &filepath);
 	/*array command now holds all parameters*/
 	switch(command[0]){
 		case SOLVE:
@@ -27,7 +28,7 @@ void play_game(Board b, int *modep,int *np, int *mp, list *undo_lst){
 			break;
 			
 		case PRINT_BOARD:
-			printBoard(b, *np, *mp, *modep);
+			printBoard(*b, *np, *mp, *modep);
 			break;	
 		
 		case SET:
@@ -36,43 +37,43 @@ void play_game(Board b, int *modep,int *np, int *mp, list *undo_lst){
 		
 		case VALIDATE:
 			//command needs work;
-			validate(b, *np, *mp, *modep);
+			validate(*b, *np, *mp, *modep);
 			break;
 		
 		case GUESS:
 			//command needs work;
-			guess(b, *np, *mp, *modep, undo_lst);
+			guess(*b, *np, *mp, *modep, undo_lst);
 			break;
 		
 		case GENERATE:
 			//command needs work;
-			generate(b, *np, *mp, *modep, undo_lst);
+			generate(*b, *np, *mp, *modep, undo_lst);
 			break;
 		
 		case UNDO:
-			undo_command(b,*np, *mp, *modep, undo_lst);
+			undo_command(*b,*np, *mp, *modep, undo_lst);
 			break;
 		
 		case REDO:
-			redo_command(b, *np, *mp, *modep, undo_lst);
+			redo_command(*b, *np, *mp, *modep, undo_lst);
 			break;
 		
 		case SAVE:
-			save_command(filepath, b, *np, *mp, *modep);
+			save_command(filepath, *b, *np, *mp, *modep);
 			break;
 		
 		case HINT:
 			//command needs work;
-			hint(b, *np, *mp, *modep, command[1],command[2]);
+			hint(*b, *np, *mp, *modep, command[1],command[2]);
 			break;
 		
 		case GEUSS_HINT:
 			//command needs work;
-			guess_hint(b, *np, *mp, *modep, command[1],command[2]);
+			guess_hint(*b, *np, *mp, *modep, command[1],command[2]);
 			break;
 		
 		case NUM_SOLUTIONS:
-			num_solutions(b, *np, *mp, *modep);
+			num_solutions(*b, *np, *mp, *modep);
 			break;
 		
 		case AUTOFILL:
@@ -80,11 +81,11 @@ void play_game(Board b, int *modep,int *np, int *mp, list *undo_lst){
 			break;
 		
 		case RESET:
-			reset_command(b, *np, *mp, *modep, undo_lst);
+			reset_command(*b, *np, *mp, *modep, undo_lst);
 			break;
 		
 		case EXIT:
-			exitgame(b, *np, *mp, undo_lst);
+			exitgame(*b, *np, *mp, undo_lst);
 			break;
 		
 		case INVALID:

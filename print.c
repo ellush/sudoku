@@ -29,10 +29,8 @@ void draw_cells_row(int n, int m, Board B, int row, bool in_Edit_mode){
 		if(B[row][col].fixed){
 			printf(".");
 		}
-		else if(B[row][col].wrong){
-			if(mark_errors || in_Edit_mode){
-				printf("*");
-			}
+		else if(B[row][col].wrong && (mark_errors || in_Edit_mode)){
+			printf("*");
 		}
 		else {
 			printf(" ");				
@@ -45,6 +43,9 @@ void draw_board(int n, int m, Board B, bool in_Edit_mode){
 	int rowofblocks;
 	int rowofcells;
     
+	if(B == NULL){
+		return;
+	}
 	draw_separator_row(n,m);
     for(rowofblocks=0; rowofblocks < n; rowofblocks++){
         
