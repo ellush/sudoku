@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "Game_Board.h"
+#include "Game_board.h"
 
 void clearboard(Board B, int n, int m);
 

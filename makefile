@@ -1,5 +1,5 @@
 CC = gcc
-OBJS = main.o Stack.o Backtrack_Solver.o LP.o print.o sub_List.o List.o UndoRedo.o Game.o user_commands.o
+OBJS = main.o Stack.o Backtrack_Solver.o LP.o print.o sub_List.o List.o UndoRedo.o Game.o user_commands.o Save_Load.o
 EXEC = sudoku-console
 COMP_FLAG = -ansi -Wall 
 GUROBI_COMP = -I/usr/local/lib/gurobi563/include
@@ -12,6 +12,8 @@ Backtrack_Solver.o: Backtrack_Solver.h Backtrack_Solver.c Stack.h Game_board.h
 LP.o: LP.h LP.c Game_board.h 
 	$(CC) $(COMP_FLAG) $(GUROBI_COMP) -c $*.c
 print.o: print.c print.h Game_board.h
+	$(CC) $(COMP_FLAG) -c $*.c
+Save_Load.o: Save_Load.c Save_Load.h Game_board.h
 	$(CC) $(COMP_FLAG) -c $*.c
 sub_List.o: sub_List.c sub_List.h Game_board.h
 	$(CC) $(COMP_FLAG) -c $*.c

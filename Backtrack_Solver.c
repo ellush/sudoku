@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "Stack.h"
-#include "Game_Board.h"
+#include "Game_board.h"
 
 
 /*finds next empty cell*/

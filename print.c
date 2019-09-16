@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
-#include "Game_Board.h"
+#include "Game_board.h"
 
 void draw_separator_row(int n, int m){
 	int i;

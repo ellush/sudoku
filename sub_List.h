@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
-#include "Game_Board.h"
+#include "Game_board.h"
 
 
 typedef struct sub_elem{

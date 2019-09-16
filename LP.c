@@ -91,17 +91,34 @@ bool LPILP_solver(Board B, int n, int m, int dof_map[], int dof_count, double so
 
 		/* Random weight */
 		w = rand() % 100 + 1;
-
-    	printf("w=%d\n", w);
 		
 		ub  = (double*)malloc(dof_count * sizeof(double));
 		for (i = 0; i < dof_count; i++)
 			ub[i] = 1.0;
 
 		/* set objective function */
-		obj = (double*)malloc(dof_count * sizeof(double));		
+		obj = (double*)malloc(dof_count * sizeof(double));
+		/* for (i = 0; i < dof_count; i++)
+			obj[i] = 0.0; */
 		for (i = 0; i < dof_count; i++)
-			obj[i] = rand() % (3*BOARDSIZE) + 1;
+			obj[i] = rand() % (100*BOARDSIZE) + 1;
+
+		/* Apply weights in each subgrid - bias towards each value appearing once in a subgrid */
+		/* for (v = 0; v < BOARDSIZE; v++) {   */
+		/* for (v = 0; v < 1; v++) {    
+			for (ig = 0; ig < n; ig++) {
+				for (jg = 0; jg < m; jg++) {					
+					for (i = ig*m; i < ig*m+1; i++) {
+						for (j = jg*n; j < jg*n+1; j++) {
+							if (dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]) {
+								printf("Adding weight for cell <%d,%d> - value %d\n",i+1,j+1,v+1);
+								obj[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ] = 1000;		
+							}
+						}
+					}					
+				}
+			}
+		} */
 
 		error = GRBnewmodel(env, &model, "sudoku LP ", dof_count, obj, NULL, ub, NULL, NULL);
 		
@@ -187,14 +204,18 @@ bool LPILP_solver(Board B, int n, int m, int dof_map[], int dof_count, double so
 			}
 		}
 	}	
-
-	/*  debug constrains */
-	GRBupdatemodel(model);
-	GRBwrite(model,"debug.lp");
 	
 	/* Turn off console logging */
 	/* error = GRBsetintparam(GRBgetenv(model), "OutputFlag", 0);
 	if (error) goto QUIT; */
+
+	/* The objective is to maximize the cost function (effective only for LP) */
+	error = GRBsetintattr(model, "ModelSense", -1);
+	if (error) goto QUIT;
+
+	/*  debug constrains */
+	GRBupdatemodel(model);
+	GRBwrite(model,"debug.lp");	
 
 	/* Optimize model */
 	/* This routine performs the optimization and populates internal model attributes:
@@ -307,8 +328,6 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 
 	/* Allocate memory for the solution vector: */
 	sol = (double*)malloc(dof_count * sizeof(double));
-
-	printf("dof_count: %d\n",dof_count);
 
 	success = ILP_solver(B, n, m, dof_map, dof_count, sol);
 
