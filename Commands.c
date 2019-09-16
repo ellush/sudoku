@@ -7,7 +7,7 @@
 #include "Game.h"
 #include "Save_Load.h"
 #include "commands_modes.h"
-// #include "ILP_Solver.h"
+#include "LP.h"
 
 /***************auxilary funcs for command funcs***************/
 /*func checks if cell has a conflict with a fixed cell*/
@@ -243,7 +243,7 @@ void validate(Board b, int n, int m, int mode){
 		printf("Error: Board is erroneous. can not validate\n");
 		return;
 	}
-	//validate;
+/* 	//validate; */
 }
 
 void guess(Board b, int n, int m, int mode, list* lst){
@@ -255,9 +255,9 @@ void guess(Board b, int n, int m, int mode, list* lst){
 		printf("Error: Board is erroneous. can not guess\n");
 		return;
 	}
-	//guess;need to add changes to undo_lst
+	/* //guess;need to add changes to undo_lst */
 	draw_board(n, m, b, false);
-	//if need to - check_game_over(b, n,m, modep, lst);
+	/* //if need to - check_game_over(b, n,m, modep, lst); */
 }
 
 void generate(Board b, int n, int m, int mode, list* lst){
@@ -265,9 +265,9 @@ void generate(Board b, int n, int m, int mode, list* lst){
 		printf("\"generate\" is not available in the current mode. try switching to EDIT mode\n");
 		return;
 	}
-	//generate ;need to add changes to undo_lst
+	/* //generate ;need to add changes to undo_lst */
 	draw_board(n, m, b, false);
-	//if need to - check_game_over(b, n,m, modep, lst);
+	/* //if need to - check_game_over(b, n,m, modep, lst); */
 }
 
 void undo_command(Board b,int n, int m, int mode, list* lst){
@@ -310,7 +310,7 @@ void save_command(char *filepath, Board b, int n, int m, int mode){
 			printf("Error: Board is erroneous. can not save\n");
 			return;
 		}
-		//validate, printf("Error: Board has no solution. can not save\n");
+		/* //validate, printf("Error: Board has no solution. can not save\n"); */
 		make_all_fixed(b,n,m);
 	}
 	/*save file in EDIT or SOLVE mode*/
@@ -349,7 +349,7 @@ void hint(Board b, int n, int m, int mode, int x, int y){
 		printf("Error: cell already contains a value\n");
 		return;
 	}
-	//hint(x,y) ;	
+	/* //hint(x,y) ;	 */
 }
 
 void guess_hint(Board b, int n, int m, int mode, int x, int y){
@@ -380,7 +380,7 @@ void guess_hint(Board b, int n, int m, int mode, int x, int y){
 		printf("Error: cell already contains a value\n");
 		return;
 	}
-	//guess_hint(x,y) ;	
+	/* //guess_hint(x,y) ;	 */
 }
 
 void num_solutions(Board b, int n, int m, int mode){

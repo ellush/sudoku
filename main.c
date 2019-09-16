@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "main_Aux.c"
+#include "main_Aux.h"
 
 /*global*/
 bool mark_errors = true;
