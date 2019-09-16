@@ -24,23 +24,24 @@ void extract_changes(Board b, sub_list* lst, bool undoing, bool in_reset){
 	}	
 }
 
-void undo(Board b, list *lst, bool in_reset){
+int undo(Board b, list *lst, bool in_reset){
 	if(lst->cur->next == NULL){ /*reached flag element*/
 		printf("Error! no moves to undo.\n");
-		return;
+		return -1;
 	}
 	extract_changes(b, &(lst->cur->l), true, in_reset);
 	cur_next(lst);
-	
+	return 1;	
 }
 
-void redo(Board b, list *lst){
+int redo(Board b, list *lst){
 	if(lst->cur->prev == NULL){ /*reached first element*/
 		printf("Error! no moves to redo.\n");
-		return;
+		return -1;
 	}
 	cur_prev(lst);
 	extract_changes(b, &(lst->cur->l), false, false);
+	return 1;
 }
 
 void reset(Board b, list *lst){

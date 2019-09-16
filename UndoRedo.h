@@ -7,8 +7,8 @@ last element at the llist is a FLAG, not a move */
 #include <assert.h>
 #include "List.h"
 
-void undo(Board b, list *lst, bool in_reset);
+int undo(Board b, list *lst, bool in_reset);
 
-void redo(Board b, list *lst);
+int redo(Board b, list *lst);
 
 void reset(Board b, list *lst);

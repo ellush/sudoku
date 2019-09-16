@@ -82,6 +82,8 @@ void save(char *filePath, Board b, int n, int m){
 		printf("Error! failed to save file. fclose returned EOF\n");
 		return;
 	}
+	printf("file saved successfully under \"%s\"\n",filePath);
+	return;
 }
 
 /*load func, allocates memory of Board!, old board should be freed before calling load*/

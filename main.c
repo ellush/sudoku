@@ -14,6 +14,8 @@ int main(){
 	int mode  = INIT;
 	int n,m;
 	
+	printf("WELCOME to our suduko puzzle!\n");
+	printf("i want to play a game...\n");
 	do{
 		
 		play_game(&b,&mode,&n,&m, &undo_lst);

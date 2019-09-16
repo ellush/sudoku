@@ -103,6 +103,7 @@ void check_game_over(Board *b,int n,int m, int *modep, list *lst){
 	}
 	printf("The puzzle was solved successfully! good job!\n");
 	*modep = INIT;
+	printf("mode set to INIT\n");
 	deleteBoard(*b,n,m);
 	*b = NULL;
 	/*restart undo list and add a flag node (first node is always a flag node)*/
@@ -133,7 +134,7 @@ void markErrors(int x, int *modep){
 
 void solve_command(char *filepath, Board *b, int *np, int *mp, int *modep, list *lst){
 	*modep = SOLVE;
-	
+	printf("mode set to SOLVE\n");
 	/*delete old board and list, delete empty board and list is ok*/
 	deleteBoard(*b,*np, *mp);
 	
@@ -169,7 +170,7 @@ void solve_command(char *filepath, Board *b, int *np, int *mp, int *modep, list 
 
 void edit(char *filepath, Board *b, int *np, int *mp, int *modep, list *lst){
 	*modep = EDIT;
-	
+	printf("mode set to EDIT\n");
 	/*delete old board and list, delete empty board and list is ok*/
 	deleteBoard(*b,*np, *mp);
 	
@@ -243,7 +244,7 @@ void validate(Board b, int n, int m, int mode){
 		printf("Error: Board is erroneous. can not validate\n");
 		return;
 	}
-/* 	//validate; */
+	/*/validate;*/
 }
 
 void guess(Board b, int n, int m, int mode, list* lst){
@@ -255,9 +256,9 @@ void guess(Board b, int n, int m, int mode, list* lst){
 		printf("Error: Board is erroneous. can not guess\n");
 		return;
 	}
-	/* //guess;need to add changes to undo_lst */
+	/*/guess;need to add changes to undo_lst*/
 	draw_board(n, m, b, false);
-	/* //if need to - check_game_over(b, n,m, modep, lst); */
+	/*/if need to - check_game_over(b, n,m, modep, lst);*/
 }
 
 void generate(Board b, int n, int m, int mode, list* lst){
@@ -265,9 +266,9 @@ void generate(Board b, int n, int m, int mode, list* lst){
 		printf("\"generate\" is not available in the current mode. try switching to EDIT mode\n");
 		return;
 	}
-	/* //generate ;need to add changes to undo_lst */
+	/*/generate ;need to add changes to undo_lst*/
 	draw_board(n, m, b, false);
-	/* //if need to - check_game_over(b, n,m, modep, lst); */
+	/*/if need to - check_game_over(b, n,m, modep, lst);*/
 }
 
 void undo_command(Board b,int n, int m, int mode, list* lst){
@@ -275,7 +276,10 @@ void undo_command(Board b,int n, int m, int mode, list* lst){
 		printf("\"undo\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
 		return;
 	}
-	undo(b, lst, false); /*bool in_reset*/
+	/*check if undo failed*/
+	if(undo(b, lst, false) < 0){ /*bool in_reset*/
+		return;
+	}
 	mark_wrong_cells(b,n,m);
 	if(mode == SOLVE){
 		draw_board(n, m, b, false);
@@ -289,8 +293,11 @@ void redo_command(Board b, int n, int m, int mode, list* lst){
 	if(mode == INIT){
 		printf("\"redo\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
 		return;
+	}	
+	/*check if redo failed*/
+	if(redo(b, lst) < 0){
+		return;
 	}
-	redo(b, lst);
 	mark_wrong_cells(b,n,m);
 	if(mode == SOLVE){
 		draw_board(n, m, b, false);
@@ -310,7 +317,7 @@ void save_command(char *filepath, Board b, int n, int m, int mode){
 			printf("Error: Board is erroneous. can not save\n");
 			return;
 		}
-		/* //validate, printf("Error: Board has no solution. can not save\n"); */
+		/*/validate, printf("Error: Board has no solution. can not save\n");*/
 		make_all_fixed(b,n,m);
 	}
 	/*save file in EDIT or SOLVE mode*/
@@ -349,7 +356,7 @@ void hint(Board b, int n, int m, int mode, int x, int y){
 		printf("Error: cell already contains a value\n");
 		return;
 	}
-	/* //hint(x,y) ;	 */
+	/*/hint(x,y) ;*/	
 }
 
 void guess_hint(Board b, int n, int m, int mode, int x, int y){
@@ -380,7 +387,7 @@ void guess_hint(Board b, int n, int m, int mode, int x, int y){
 		printf("Error: cell already contains a value\n");
 		return;
 	}
-	/* //guess_hint(x,y) ;	 */
+	/*/guess_hint(x,y) ;	*/
 }
 
 void num_solutions(Board b, int n, int m, int mode){

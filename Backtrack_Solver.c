@@ -20,7 +20,6 @@ bool find_next_cell(Board B,int N, int* row, int* col){
 	return false;
 }
 
-/*this is a temp func, should be reviwed*/
 bool is_legal_placement(Board B ,int placement_row, int placement_col, int val, int n, int m){
 	int row, col;
 	
@@ -118,6 +117,7 @@ int count_solutions(Board B, int n, int m){
 		while(!set_next_val( B, n, m, row, col)){				
 			/* if the stack is empty, cant backtrack, done*/
 			if(double_isEmpty(&s_row,&s_col)){
+				B[row][col].num = 0;/*this is new*/
 				return counter;
 			}
 			
