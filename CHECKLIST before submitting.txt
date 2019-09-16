@@ -1,3 +1,0 @@
-
-*add undo/redo to generate and guess
-*check print and save format on nova
