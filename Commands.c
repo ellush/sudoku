@@ -7,7 +7,7 @@
 #include "Game.h"
 #include "Save_Load.h"
 #include "commands_modes.h"
-#include "LP.h"
+/*#include "LP.h"*/
 
 /***************auxilary funcs for command funcs***************/
 /*func checks if cell has a conflict with a fixed cell*/
@@ -247,7 +247,7 @@ void validate(Board b, int n, int m, int mode){
 	/*/validate;*/
 }
 
-void guess(Board b, int n, int m, int mode, list* lst){
+void guess(Board b, int n, int m, int mode /*, list* lst*/){
 	if(mode != SOLVE){
 		printf("\"guess\" is not available in the current mode. try switching to SOLVE mode\n");
 		return;
@@ -261,7 +261,7 @@ void guess(Board b, int n, int m, int mode, list* lst){
 	/*/if need to - check_game_over(b, n,m, modep, lst);*/
 }
 
-void generate(Board b, int n, int m, int mode, list* lst){
+void generate(Board b, int n, int m, int mode /*, list* lst*/){
 	if(mode != EDIT){
 		printf("\"generate\" is not available in the current mode. try switching to EDIT mode\n");
 		return;

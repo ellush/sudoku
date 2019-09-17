@@ -14,7 +14,7 @@ int main(){
 	int mode  = INIT;
 	int n,m;
 	
-	printf("WELCOME to our suduko puzzle!\n");
+	printf("WELCOME to our sudoku puzzle!\n");
 	printf("i want to play a game...\n");
 	do{
 		

@@ -7,4 +7,4 @@
 /* //#include "Interface.h" */
 
 
-void play_game(Board b, int *modep,int *np, int *mp, list *undo_lst);
+void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst);

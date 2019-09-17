@@ -1,0 +1,5 @@
+
+*add undo/redo to generate and guess
+*check print and save format on nova
+*missing flags on makefile! should hold: -ansi -Wall -Wextra -Werror -pedantic-errors
+holds: -ansi -Wall

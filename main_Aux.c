@@ -9,7 +9,7 @@
 
 void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 	int command[4] = {0,0,0,0};
-	char *filepath; /*command string*/
+	char *filepath = NULL; /*command string*/
 	
 	/*get_command(command, &filepath);*/
 	/*array command now holds all parameters*/

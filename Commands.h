@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include "Game.h"
 #include "Save_Load.h"
-#include "LP.h"
+/*#include "LP.h"*/
 
 /***************auxilary funcs for command funcs***************/
 /*func checks if cell has a conflict with a fixed cell*/
