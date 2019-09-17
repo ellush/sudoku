@@ -411,7 +411,8 @@ void autofill_command(Board *b, int n, int m, int *modep, list *lst){
 		printf("Error: Board is erroneous. can not autofill\n");
 		return;
 	}
-	autofill(*b, n, m, lst);
+	/* autofill in verbose mode: */
+	autofill(*b, n, m, lst, true); 
 	draw_board(n, m, *b, false);
 	check_game_over(b, n,m, modep, lst);
 }

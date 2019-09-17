@@ -82,7 +82,7 @@ bool has_single_val(Board B,int row,int col,int *val, int n, int m){
 }
 
 /*this autofill func uses 3 stacks */
-void autofill(Board B, int n, int m, list *lst){
+void autofill(Board B, int n, int m, list *lst, bool verbose){
 	int i,j,val;
 	stack s_row, s_col, s_val;
 	initialize_double_stack(&s_row,&s_col);
@@ -109,7 +109,8 @@ void autofill(Board B, int n, int m, list *lst){
 		/*make change*/
 		B[i][j].num = val;
 		
-		printf("set %d in cell <%d,%d>\n",val, i+1,j+1); 
+		if (verbose)
+			printf("set %d in cell <%d,%d>\n",val, i+1,j+1); 
 	}
 	mark_wrong_cells(B,n,m);
 	return;
