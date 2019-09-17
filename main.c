@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 #include "main_Aux.h"
+
 
 /*global*/
 bool mark_errors = true;
@@ -14,6 +16,8 @@ int main(){
 	int mode  = INIT;
 	int n,m;
 	
+	srand(time(NULL));
+
 	printf("WELCOME to our sudoku puzzle!\n");
 	printf("i want to play a game...\n");
 	do{

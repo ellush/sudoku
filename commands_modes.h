@@ -19,7 +19,7 @@ a Board definition.
 #define REDO 11
 #define SAVE 12
 #define HINT 13
-#define GEUSS_HINT 14
+#define GUESS_HINT 14
 #define NUM_SOLUTIONS 15
 #define AUTOFILL 16
 #define RESET 17

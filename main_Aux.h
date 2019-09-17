@@ -5,6 +5,6 @@
 #include "commands_modes.h" /* line should move to interface */
 #include "Commands.h"
 /* //#include "Interface.h" */
-
+#include "parser.h"
 
 void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst);

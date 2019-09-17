@@ -57,7 +57,7 @@ int map_variables(Board B, int n, int m, int dof_map[]){
 	return dof_count;
 }
 
-bool LPILP_solver(Board B, int n, int m, int dof_map[], int dof_count, double sol[], bool ILP){
+bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool ILP){
 	
 	int BOARDSIZE = n*m;	
 	GRBenv   *env   = NULL;
@@ -72,8 +72,7 @@ bool LPILP_solver(Board B, int n, int m, int dof_map[], int dof_count, double so
 	int       i, j, v, ig, jg, count;
 	int       error = 0;	
 	bool      success = false;
-	int       w;
-		
+
 	/* Create environment */
 	error = GRBloadenv(&env, NULL);
 	if (error) goto QUIT;
@@ -87,10 +86,7 @@ bool LPILP_solver(Board B, int n, int m, int dof_map[], int dof_count, double so
 		/*  No lb,ub needed as only unconstrained binary variables are solved for */
 		error = GRBnewmodel(env, &model, "sudoku ILP", dof_count, NULL, NULL, NULL, vtype, NULL);
 		free(vtype);
-	} else {
-
-		/* Random weight */
-		w = rand() % 100 + 1;
+	} else {		
 		
 		ub  = (double*)malloc(dof_count * sizeof(double));
 		for (i = 0; i < dof_count; i++)
@@ -98,10 +94,9 @@ bool LPILP_solver(Board B, int n, int m, int dof_map[], int dof_count, double so
 
 		/* set objective function */
 		obj = (double*)malloc(dof_count * sizeof(double));
-		/* for (i = 0; i < dof_count; i++)
-			obj[i] = 0.0; */
+		
 		for (i = 0; i < dof_count; i++)
-			obj[i] = rand() % (100*BOARDSIZE) + 1;
+			obj[i] = rand() % (2*BOARDSIZE) + 1;
 
 		/* Apply weights in each subgrid - bias towards each value appearing once in a subgrid */
 		/* for (v = 0; v < BOARDSIZE; v++) {   */
@@ -304,12 +299,12 @@ bool LPILP_solver(Board B, int n, int m, int dof_map[], int dof_count, double so
 		return false;
 }
 
-bool ILP_solver(Board B, int n, int m, int dof_map[], int dof_count, double sol[]){
-	return LPILP_solver(B, n, m, dof_map, dof_count, sol, true);
+bool ILP_solver(int n, int m, int dof_map[], int dof_count, double sol[]){
+	return LPILP_solver(n, m, dof_map, dof_count, sol, true);
 }
 
-bool LP_solver(Board B, int n, int m, int dof_map[], int dof_count, double sol[]){
-	return LPILP_solver(B, n, m, dof_map, dof_count, sol, false);
+bool LP_solver(int n, int m, int dof_map[], int dof_count, double sol[]){
+	return LPILP_solver(n, m, dof_map, dof_count, sol, false);
 }
 
 bool ILP_solve(Board B, int n, int m, bool apply){
@@ -329,7 +324,7 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 	/* Allocate memory for the solution vector: */
 	sol = (double*)malloc(dof_count * sizeof(double));
 
-	success = ILP_solver(B, n, m, dof_map, dof_count, sol);
+	success = ILP_solver(n, m, dof_map, dof_count, sol);
 
 	if (success && apply) {
 		for (i = 0; i < BOARDSIZE; i++) {
@@ -370,7 +365,7 @@ bool LP_guess(Board B, int n, int m, float X){
 	/* Allocate memory for the solution vector: */
 	sol = (double*)malloc(dof_count * sizeof(double));
 
-	success = LP_solver(B, n, m, dof_map, dof_count, sol);
+	success = LP_solver(n, m, dof_map, dof_count, sol);
 
 	printf("Listing possible values:\n"); /* delete */
 
@@ -428,7 +423,7 @@ bool LP_guess_hint(Board B, int n, int m, int X, int Y){
 	/* Allocate memory for the solution vector: */
 	sol = (double*)malloc(dof_count * sizeof(double));
 	
-	success = LP_solver(B, n, m, dof_map, dof_count, sol);
+	success = LP_solver(n, m, dof_map, dof_count, sol);
 	
 	/* ~TODO~ ?? check: If the board is unsolvable, it is an error. */
 	if (success) {		

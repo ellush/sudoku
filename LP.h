@@ -9,7 +9,7 @@ bool LPILP_autofill(Board B, int n, int m);
 
 int map_variables(Board B, int n, int m, int dof_map[]);
 
-bool LPILP_solver(Board B, int n, int m, int dof_map[], int dof_count, double sol[], bool ILP);
+bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool ILP);
 
 bool ILP_solver(Board B, int n, int m, int dof_map[], int dof_count, double sol[]);
 
