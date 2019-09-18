@@ -3,11 +3,12 @@
 #include <stdbool.h>
 #include <string.h>
 #include "Game_board.h"
-/*#include "Game.h"*/
+#include "Game.h"
 #include "LP.h"
-/* #include "print.h" */
+#include "print.h"
 #include "Save_Load.h"
 
+/*global*/ /*would consider placing them inside func*/
 bool sol;
 Board cpy_board;
 
@@ -266,119 +267,116 @@ bool choose_random_legal_val(Board cpy_board,int empty_cells[][2], int num_empty
  
 
 void generate(Board B, int n, int m, int X, int Y){
-	int c,i;
+	int c,i, col, row;
+	int index;	
 	int iter_count = 0;
-/*	int k,l,o;  to delete with the print command later!!!*/
+	int *num_empty_cells;
+	int *legal_val;
+	int **empty_cells = (int**) malloc(n*m*n*m*sizeof(int*));/*allocate a pointer array with N^2 cells*/
+	if(empty_cells == NULL){
+		printf("Error: Allocation was unsuccessful. \n");
+		printf("Exiting...\n");
+		exit(1);
+	}
+	/*each cell contains a pointer to a 2 int array*/
+	for(i = 0; i< n*m*n*m; i++){
+		empty_cells[i] = malloc(2*sizeof(int));
+		if(empty_cells[i] == NULL){
+			printf("Error: Allocation was unsuccessful. \n");
+			printf("Exiting...\n");
+			exit(1);
+		}
+	}
 	
-	int empty_cells[n*m*n*m][2];
-
+	cpy_board = makeBoard(cpy_board, n,m);
+	copyboard(B,n,m,cpy_board);
     /*insert into empty_cells array indexs of all empty cells in the board. return c = #empty cells*/
 	c = find_empty_cells(B,n,m, empty_cells);
-
+	
+	/*allocate int[] of size c*/
+	num_empty_cells =(int*)malloc(c*sizeof(int)); 
+	/*create array with legal values for the size of the current board*/
+	legal_val = (int*)malloc(n*m*sizeof(int));
+	
+	
 	if (X > c){
 		printf("Error:: %d is larger then numer of empty cells\n",X);	
-		return;  
+		/*free resources*/
+		goto END;  
 	} 
-	int num_empty_cells[c]; 
-	cpy_board = malloc(n*m*sizeof(cell*));
-				int s;
-				for(s=0; s<n*m; s++){
-					cpy_board[s] = malloc(n*m*sizeof(cell));
-				}
-				copyboard(B,n,m,cpy_board);
+	
+	/*did you mean while(X>0)??*/
 	if (X > 0){
 	
-			/*create array with legal values for the size of the current board*/
-			int legal_val[n*m];
-			for (i = 0; i < (n*m); i++){
-				legal_val[i] = i+1;
-			}
-			/***************************************/
-			/* to delete later !!!!!!!!!!!!!!!!!!!
-			printf("array with legal val- generate \n");
-			for(k = 0; k < n*m ; k++){
-				o = legal_val[k];
-				printf("%d\t",o);
-			}
-			printf("\n");
-			***************************************/
-			do{
-				/*test copy*/
-				
-				select_n_random_cells(empty_cells, X,num_empty_cells,c,1); /*select X random cells from all empty cells in the board */
-				/***************************************/
-				/* to delete later !!!!!!!!!!!!!!!!!!!
-				printf("array with empty cells- generate \n");
-				for(k = 0; k < c ; k++){
-					o = num_empty_cells[k];
-					printf("%d\t",o);
+		for (i = 0; i < (n*m); i++){
+			legal_val[i] = i+1;
+		}
+		do{				
+			/*select X random cells from all empty cells in the board */
+			select_n_random_cells(empty_cells, X,num_empty_cells,c,1); 
+			if (choose_random_legal_val(cpy_board,empty_cells,num_empty_cells,legal_val,n,m,X,c)){
+				if (ILP_solve(cpy_board,n,m,true)){
+					break;	
 				}
-				printf("\n");
-				***************************************/
-				if (choose_random_legal_val(cpy_board,empty_cells,num_empty_cells,legal_val,n,m,X,c)){
-					if (ILP_solve(cpy_board,n,m,true)){
-						break;	
-					}
-				}
-				iter_count++;
-			} while (iter_count < 1000);
+			}
+			iter_count++;
+		} while (iter_count < 1000);
 	}
 
 	printf("iter_count = %d, ILP_solve status=%d\n",iter_count,ILP_solve(cpy_board,n,m,true));
 	
-	if ((iter_count == 1000) || ((X == 0) && (!ILP_solve(cpy_board,n,m,true)))){
-		printf("Generate failed!\n" );
-		int v;
-		for(v=0; v<n*m; v++){
-			free(cpy_board[v]);
-		}
-		free(cpy_board);
-		return;
+	if (iter_count == 1000){
+		printf("Error: generate failed!, tried 1000 iterations\n" );
+		goto END;
 	}
-
-	/* to delete later !!!!!!!!!!!!!!!!!!!*/
-/*	draw_board(n,m,cpy_board, true);*/
-
-	/*choosing Y random cells*/
+	if(X == 0 && !ILP_solve(cpy_board,n,m,true)){
+		printf("Error: generate failed!\n" );/*why did it fail?*/
+		goto END;
+	}
+	
+	/*is this needed?*********************************************/
+	/*
+	/*choosing Y random cells*
 	if(Y == 0){
-	/*	clearboard(B,n,m);*/
+	/*	clearboard(B,n,m);*
 	} else if( Y == (m*n*m*n)){
-		/*	draw_board(n,m,B, true);*/
-
+		/*	draw_board(n,m,B, true);*
+	
 		copyboard(cpy_board,n,m,B);
-	/*	draw_board(n,m,B, true); */
+	/*	draw_board(n,m,B, true); *
 
 	} else {
-		select_n_random_cells(empty_cells,Y,num_empty_cells,(n*m*n*m),0);
+	*/
+	/*^^^^^^^^^^^^^^^^^^^*********************************************/
+	select_n_random_cells(empty_cells,Y,num_empty_cells,(n*m*n*m),0);
 
 
 	/*deleting all but Y cells*/
-	/*	draw_board(n,m,B, true); */
 
-		clearboard(B,n,m);	
+	clearboard(B,n,m);	
 
-		int col,row;
-		for ( i = (n*m*n*m-1); i >= (n*m*n*m-Y); i--){
-			int index = empty_cells[i][0];\
+	
+	for ( i = (n*m*n*m-1); i >= (n*m*n*m-Y); i--){
+		index = empty_cells[i][0];
 		/*	printf("im the current index %d\n",index); */ 
-			row = index/(n*m);
+		row = index/(n*m);
 		/*	printf("row %d\n", row); */
-			col = index%(m*n);
+		col = index%(m*n);
 		/*	printf("col %d\n", col); */
-			B[row][col].num = cpy_board[row][col].num;
-		}
-				draw_board(n,m,cpy_board, true);
-
-		/*copy cpy_board to B*/
- 	}
-	int v;
-	for(v=0; v<n*m; v++){
-		free(cpy_board[v]);
+		B[row][col].num = cpy_board[row][col].num;
 	}
-	free(cpy_board);
+	mark_wrong_cells(B,n,m);
+	draw_board(n,m,cpy_board, true);
+		
+	/*goto destenation, MUST free all resources*/
+	END:
+	
+	deleteBoard(cpy_board,n ,m);
+	free(legal_val);
+	free(num_empty_cells);
+	/*free each cell*/
+	for(i = 0; i< n*m*n*m; i++){
+		free(empty_cells[i]);
+	}
+	free(empty_cells);/*free pointer array*/
 }
-
-   
-
-
-
