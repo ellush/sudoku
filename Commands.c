@@ -8,7 +8,7 @@
 #include "Game.h"
 #include "Save_Load.h"
 #include "commands_modes.h"
-/*#include "LP.h"*/
+#include "LP_commands.h"
 
 /***************auxilary funcs for command funcs***************/
 /*func checks if cell has a conflict with a fixed cell*/
@@ -169,7 +169,7 @@ void edit(char *filepath, Board *b, int *np, int *mp, int *modep, list *lst){
 	printf("mode set to EDIT\n");
 	/*delete old board and list, delete empty board and list is ok*/
 	deleteBoard(*b,*np, *mp);
-	
+
 	/*restart undo list and add a flag node (first node is always a flag node)*/
 	delete_list(lst);
 	initialize_list(lst);
@@ -231,26 +231,50 @@ void validate(Board b, int n, int m, int mode){
 		printf("Error: Board is erroneous. can not validate\n");
 		return;
 	}
-	/*/validate;*/
+	if (ILP_validate(b,n,m)){
+		printf("Validation passed: board is solvable\n");
+	} else{
+		printf("Validation failed: board is unsolvable\n");
+	}
 }
 
-void guess(Board b, int n, int m, int mode /*, list* lst*/){
-	/*************************************stopped here, need todeal with the float problem*************/
+void guess(Board b, int n, int m, int mode , list* lst, float x){
+		/*************************************stopped here, need todeal with the float problem*************/
+	if(mode != SOLVE){
+		printf("\"guess\" is not available in the current mode. try switching to SOLVE mode\n");
+		return;
+	} 
+
 	if(has_error(b,n,m)){
 		printf("Error: Board is erroneous. can not guess\n");
 		return;
 	}
 	/*/guess;need to add changes to undo_lst*/
-	draw_board(n, m, b, false);
+	
+	LP_guess(b, n, m, x);
+	draw_board(n, m, b, false); /* delete this draw? */
 	/*/if need to - check_game_over(b, n,m, modep, lst);*/
 }
 
-void generate(Board b, int n, int m, int mode /*, list* lst*/){
+void generate(Board b, int n, int m, int mode , int i, int j, list* lst){
 	if(mode != EDIT){
 		printf("\"generate\" is not available in the current mode. try switching to EDIT mode\n");
 		return;
 	}
+	if((i < 0) || (i > (n*m*n*m))) {
+		printf("Error: %d not in range\n", i);
+		return;
+	}
+	if((j < 0) || (j > (n*m*n*m))) {
+		printf("Error: %d not in range\n", j);
+		return;
+	}
+	if(has_error(b,n,m)){
+		printf("Error: Board is erroneous. can not generate\n");
+		return;
+	}
 	/*/generate ;need to add changes to undo_lst*/
+	ILP_generate(b,n,m,i,j);
 	draw_board(n, m, b, false);
 	/*/if need to - check_game_over(b, n,m, modep, lst);*/
 }
@@ -316,11 +340,7 @@ void hint(Board b, int n, int m, int mode, int x, int y){
 	if(mode != SOLVE){
 		printf("\"hint\" is not available in the current mode. try switching to SOLVE mode\n");
 		return;
-	}
-	if(has_error(b,n,m)){
-		printf("Error: Board is erroneous. can not hint\n");
-		return;
-	}
+	} 
 	/*user enters 1- based coor*/
 	x--;
 	y--;
@@ -332,6 +352,11 @@ void hint(Board b, int n, int m, int mode, int x, int y){
 		printf("Error: column coordinate is not in range 1 - %d\n",n*m);
 		return;
 	}
+	if(has_error(b,n,m)){
+		printf("Error: Board is erroneous. can not hint\n");
+		return;
+	}
+	
 	if(b[x][y].fixed == true){
 		printf("Error: cell is fixed\n");
 		return;
@@ -340,29 +365,31 @@ void hint(Board b, int n, int m, int mode, int x, int y){
 		printf("Error: cell already contains a value\n");
 		return;
 	}
-	/*/hint(x,y) ;*/	
+	ILP_hint(b, n, m, x, y);	
+	
 }
 
 void guess_hint(Board b, int n, int m, int mode, int x, int y){
-	if(mode != SOLVE){
+/*	if(mode != SOLVE){
 		printf("\"guess_hint\" is not available in the current mode. try switching to SOLVE mode\n");
+		return;
+	}*/
+	/*user enters 1- based coor*/
+	x--;
+	y--;
+	if(x > n*m-1 || x < 0){ 
+		printf("Error: row coordinate is not in range 1 - %d\n",n*m);
+		return;
+	}
+	if(y > n*m-1 || y < 0){
+		printf("Error: column coordinate is not in range 1 - %d\n",n*m);
 		return;
 	}
 	if(has_error(b,n,m)){
 		printf("Error: Board is erroneous. can not guess hint\n");
 		return;
 	}
-	/*user enters 1- based coor*/
-	x--;
-	y--;
-	if(x > n*m-1 || x < 0){ 
-		printf("Error: row coordinate is not in range 1 - %d\n",n*m);
-		return;
-	}
-	if(y > n*m-1 || y < 0){
-		printf("Error: column coordinate is not in range 1 - %d\n",n*m);
-		return;
-	}
+	
 	if(b[x][y].fixed == true){
 		printf("Error: cell is fixed\n");
 		return;
@@ -371,7 +398,7 @@ void guess_hint(Board b, int n, int m, int mode, int x, int y){
 		printf("Error: cell already contains a value\n");
 		return;
 	}
-	/*/guess_hint(x,y) ;	*/
+	LP_guess_hint(b, n, m, x, y);
 }
 
 void num_solutions(Board b, int n, int m, int mode){

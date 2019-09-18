@@ -6,7 +6,9 @@
 #include <stdbool.h>
 #include "Game.h"
 #include "Save_Load.h"
-/*#include "LP.h"*/
+#include "commands_modes.h"
+#include "LP_commands.h"
+
 
 /***************auxilary funcs for command funcs***************/
 /*func checks if cell has a conflict with a fixed cell*/
@@ -36,9 +38,9 @@ void set_command(Board *b, int x, int y, int z,int n, int m, int *modep, list *l
 
 void validate(Board b, int n, int m, int mode);
 
-void guess(Board b, int n, int m, int mode, list* lst);
+void guess(Board b, int n, int m, int mode, list* lst, float x);
 
-void generate(Board b, int n, int m, int mode, list* lst);
+void generate(Board b, int n, int m, int mode, int i, int j, list* lst);
 
 void undo_command(Board b,int n, int m, int mode, list* lst);
 

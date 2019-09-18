@@ -6,6 +6,7 @@
 #include "commands_modes.h"
 
 
+
 bool isnum(char token[]){
 	unsigned int i;
 	if(token == NULL){
@@ -19,16 +20,6 @@ bool isnum(char token[]){
 	return true;
 }
 
-/* method to correct the insert of x,y from 1-9 to 0-8, and check if token is a legal num*/
-void put(int command[], int i, char token[]){
-	if(i == 1 || i ==2){
-		command[i] = atoi(token)-1;
-	}
-	else{
-		command[i] = atoi(token);
-	}
-}
-
 void settozero(int command[]){
 	int i;
 	for(i=0; i<4; i++){
@@ -36,13 +27,13 @@ void settozero(int command[]){
 	}
 }
 
-void get_command(int command[]){ 	/* command is a 4 elemnt array*/
+void get_command(int command[]/*, NULL*/){ 	/* command is a 4 elemnt array*/
 	int i;
 	char* null_if_EOF;
 	char user_input[257]; 				/* assumed in project insructions max user_input length is 256 chars*/
 	char* token;
 	const char delimiter[8] = " \t\r\n";
-	
+
 	settozero(command);
 	do{
 		null_if_EOF = fgets(user_input, sizeof(user_input), stdin);
@@ -67,18 +58,33 @@ void get_command(int command[]){ 	/* command is a 4 elemnt array*/
 		/*to continue...*/
 		return;
 	} 
-	else if(strcmp(token, "edit")){
+	else if(strcmp(token, "edit") == 0){
 		command[0] = EDIT;
-		token = strtok(NULL, delimiter);
 		/*to continue...*/
+		/*delete later! for testing only!!!!!!!*/
+		for(i=1; i<3; i++){
+			
+			token = strtok(NULL, delimiter); 
+			
+			if(isnum(token)){
+
+				command[i] = atoi(token);
+			/*	printf("command[i]= %d\n", command[i]); */
+			}
+			else{
+
+				command[0] = INVALID;
+				return;
+			}
+		} 
 		return;
 	}
-	else if(strcmp(token, "mark_errors")){
+	else if(strcmp(token, "mark_errors") == 0){
 		command[0] = MARK_ERRORS;
 		token = strtok(NULL, delimiter);
 		if(isnum(token)){
-				put(command, 1, token);
-			}
+			command[1] = atoi(token);
+				}
 			else{
 				command[0] = INVALID;
 				return;
@@ -96,13 +102,14 @@ void get_command(int command[]){ 	/* command is a 4 elemnt array*/
 			token = strtok(NULL, delimiter); /* get next part of user_input*/
 			
 			if(isnum(token)){
-				put(command, i, token);
+				command[i] = atoi(token);
 			}
 			else{
 				command[0] = INVALID;
 				return;
 			}
 		}
+
 		return;
 	}
 	else if(strcmp(token, "validate") == 0){
@@ -112,6 +119,7 @@ void get_command(int command[]){ 	/* command is a 4 elemnt array*/
 	else if(strcmp(token, "guess") == 0){
 		command[0] = GUESS;
 		token = strtok(NULL, delimiter);
+		command[1] = 0;
 		/*to continue...*/
 		return;
 	}
@@ -122,7 +130,7 @@ void get_command(int command[]){ 	/* command is a 4 elemnt array*/
 			token = strtok(NULL, delimiter); /* get next part of user_input*/
 			
 			if(isnum(token)){
-				put(command, i, token);
+				command[i] = atoi(token);
 			}
 			else{
 				command[0] = INVALID;
@@ -152,7 +160,7 @@ void get_command(int command[]){ 	/* command is a 4 elemnt array*/
 			token = strtok(NULL, delimiter); /* get next part of user_input*/
 			
 			if(isnum(token)){
-				put(command, i, token);
+				command[i] = atoi(token);
 			}
 			else{
 				command[0] = INVALID;
@@ -168,7 +176,7 @@ void get_command(int command[]){ 	/* command is a 4 elemnt array*/
 			token = strtok(NULL, delimiter); /* get next part of user_input*/
 			
 			if(isnum(token)){
-				put(command, i, token);
+				command[i] = atoi(token);
 			}
 			else{
 				command[0] = INVALID;

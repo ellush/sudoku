@@ -4,11 +4,37 @@
 #include <string.h>
 #include "Game_board.h"
 #include "gurobi_c.h"
+#include "Game.h"
 
-
+/* LPILP_autfill is recursive. Returns false once no remaining cells can be auto-filled.*/
 bool LPILP_autofill(Board B, int n, int m){
-	return true;
+	
+	int i,j,v;
+	bool filled = false;
+	
+	printf("In autofill");
+	for(i=0; i < n*m; i++){
+		for(j=0; j< n*m; j++){
+			if(B[i][j].num == 0){
+				if(has_single_val(B,i,j,&v,n,m)){
+					B[i][j].num = v;
+					filled = true;
+					printf("Autofill: Set %d in cell <%d,%d>\n",v, i+1,j+1); 
+				}
+			}
+		}
+	}
+
+	if ( filled )
+	 	return LPILP_autofill(B, n, m);
+	else
+		return false;
 }
+
+bool LP_preprocess(Board B, int n, int m){
+	
+}
+
 
 int map_variables(Board B, int n, int m, int dof_map[]){
 	
@@ -25,12 +51,15 @@ int map_variables(Board B, int n, int m, int dof_map[]){
 		for (j = 0; j < BOARDSIZE; j++) {			
 			if (B[i][j].num-1 >= 0) {				
 				for (v = 0; v < BOARDSIZE; v++){
+					/* Reduce variables within the same cell */
 					dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] = 0;
-					if (B[i][j].num-1==v) {				                      
+					if (B[i][j].num-1==v) {
+						/* Reduce variables within the whole row and column*/				                      
 						for (k = 0; k < BOARDSIZE; k++) {
 							dof_map[k*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] = 0;
 							dof_map[i*BOARDSIZE*BOARDSIZE+k*BOARDSIZE+v] = 0;
 						}
+						/* Reduce variables within the subgrid containing the cell*/
 						for (ig = (i/m)*m ; ig < (i/m +1)*m ; ig++) {              
 							for (jg = (j/n)*n ; jg < (j/n +1)*n ; jg++) { 
 								dof_map[ig*BOARDSIZE*BOARDSIZE+jg*BOARDSIZE+v] = 0;
@@ -62,8 +91,8 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 	int BOARDSIZE = n*m;	
 	GRBenv   *env   = NULL;
 	GRBmodel *model = NULL;		
-	int       ind[BOARDSIZE];
-	double    val[BOARDSIZE];
+	int       *ind = NULL;
+	double    *val = NULL;
 	double    *obj = NULL;
 	double    *ub = NULL;
 	char      *vtype = NULL;	
@@ -72,7 +101,7 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 	int       i, j, v, ig, jg, count;
 	int       error = 0;	
 	bool      success = false;
-
+	
 	/* Create environment */
 	error = GRBloadenv(&env, NULL);
 	if (error) goto QUIT;
@@ -96,7 +125,7 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 		obj = (double*)malloc(dof_count * sizeof(double));
 		
 		for (i = 0; i < dof_count; i++)
-			obj[i] = rand() % (2*BOARDSIZE) + 1;
+			obj[i] = rand() % (3*BOARDSIZE) + 1;
 
 		/* Apply weights in each subgrid - bias towards each value appearing once in a subgrid */
 		/* for (v = 0; v < BOARDSIZE; v++) {   */
@@ -122,7 +151,12 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 	}
 	if (error) goto QUIT;
 
+	
 	/* Apply Constrains: */
+
+	/* Create arrays for indexing the constrains (max size - number of dofs) */
+	ind  =    (int*)malloc(dof_count * sizeof(int));
+	val  = (double*)malloc(dof_count * sizeof(double));
 
 	/* Each cell gets a value */
 	for (i = 0; i < BOARDSIZE; i++) {
@@ -198,7 +232,11 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 				}
 			}
 		}
-	}	
+	}
+
+	/* Free constrains indexing arrays */
+	free(ind);
+	free(val);
 	
 	/* Turn off console logging */
 	/* error = GRBsetintparam(GRBgetenv(model), "OutputFlag", 0);
@@ -218,12 +256,16 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 	error = GRBoptimize(model);
 	if (error) goto QUIT;
 
+	printf("LP1");
+
 	/* Get the optimization status */
 	error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &optimstatus);
 	if (error) goto QUIT;		
 
 	/* Process the optimization results */
 	if (optimstatus == GRB_OPTIMAL){
+
+		printf("LP2");
 
 		/* Get the value of the objective function for the computed solution */
 		/* Returns a non-zero error result if no solution was found */
@@ -232,6 +274,7 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 		
 		/* If here -> The optimization was successful */
 
+		printf("LP3");
 		/* Read the solution - the assignment to each variable */
 		/* dof_count id the number of variables, the size of "sol" should match */
 		error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, dof_count, sol);
@@ -265,7 +308,8 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 			printf("\n");
 		}
 		printf("\n~~~~ End of ILP Solver Debug ~~~~~:\n"); */	
-			
+		
+		printf("LP4");
 		/* Write model solution' */
 		GRBupdatemodel(model);
 		error = GRBwrite(model, "sudoku.sol");
@@ -291,7 +335,7 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 	/* Free environment */
 	if ( env != NULL )
 		GRBfreeenv(env);	
-	
+
 	/* success is true only if optimization succeeded AND solution was successfully read */
 	if (success)
 		return true;
@@ -300,45 +344,67 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 }
 
 bool ILP_solver(int n, int m, int dof_map[], int dof_count, double sol[]){
-	return LPILP_solver(n, m, dof_map, dof_count, sol, true);
+	if ( dof_count>0 )
+		return LPILP_solver(n, m, dof_map, dof_count, sol, true);
+	else
+		return false;
 }
 
 bool LP_solver(int n, int m, int dof_map[], int dof_count, double sol[]){
-	return LPILP_solver(n, m, dof_map, dof_count, sol, false);
+	if ( dof_count>0 )
+		return LPILP_solver(n, m, dof_map, dof_count, sol, false);
+	else
+		return false;
 }
 
 bool ILP_solve(Board B, int n, int m, bool apply){
 	int BOARDSIZE = n*m;
-	int	dof_map[BOARDSIZE*BOARDSIZE*BOARDSIZE];
+	int	*dof_map = NULL;
 	int i, j, v, dof_count;
 	double	*sol = NULL;
 	bool success;
 	float score;
 
+	/* Assumption: The board has no errors at this stage. Verified by the calling function. */
 	/* Autofill */
-	LPILP_autofill(B, n, m);	
+	LPILP_autofill(B, n, m);
 
-	/* Count and create a mapping of the variables to be solved for */
-	dof_count = map_variables(B, n, m, dof_map);
+	/* Check and mark errors */
+/* 	mark_wrong_cells(B,n,m);
+ */
+	/* Check if board is full with valid solution */
+	/* if ( has_error(B,n,m) ) {
+		success = false;
+	} else  */
+	
+	if ( !has_empty_cell(B,n,m) ) {
+		success = true; /* Board is full and valid */
+	} else {
+		/* Run solver for partially empty and valid board*/
+			
+		/* Count and create a mapping of the variables to be solved for */
+		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
+		dof_count = map_variables(B, n, m, dof_map);
 
-	/* Allocate memory for the solution vector: */
-	sol = (double*)malloc(dof_count * sizeof(double));
+		/* Allocate memory for the solution vector: */
+		sol = (double*)malloc(dof_count * sizeof(double));
 
-	success = ILP_solver(n, m, dof_map, dof_count, sol);
+		success = ILP_solver(n, m, dof_map, dof_count, sol);	
 
-	if (success && apply) {
-		for (i = 0; i < BOARDSIZE; i++) {
-			for (j = 0; j < BOARDSIZE; j++) {
-				if (B[i][j].num-1 < 0)
-					for (v = 0; v < BOARDSIZE; v++) {
-						if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v]){
-							score = sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ];
-							if (score > 0) {								
-								B[i][j].num = v+1;												
-							}
-						}							
-					}
-			}		
+		if (success && apply) {
+			for (i = 0; i < BOARDSIZE; i++) {
+				for (j = 0; j < BOARDSIZE; j++) {
+					if (B[i][j].num-1 < 0)
+						for (v = 0; v < BOARDSIZE; v++) {
+							if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v]){
+								score = sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ];
+								if (score > 0) {								
+									B[i][j].num = v+1;												
+								}
+							}							
+						}
+				}		
+			}
 		}
 	}
 
@@ -348,9 +414,9 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 	return success;
 }
 
-bool LP_guess(Board B, int n, int m, float X){
+bool LP_guesser(Board B, int n, int m, float X){
 	int BOARDSIZE = n*m;
-	int	dof_map[BOARDSIZE*BOARDSIZE*BOARDSIZE];
+	int	*dof_map = NULL;
 	int i, j, v, dof_count;
 	double	*sol = NULL;
 	bool success;
@@ -360,6 +426,7 @@ bool LP_guess(Board B, int n, int m, float X){
 	LPILP_autofill(B, n, m);
 	
 	/* Count and create a mapping of the variables to be solved for */
+	dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
 	dof_count = map_variables(B, n, m, dof_map);
 
 	/* Allocate memory for the solution vector: */
@@ -402,22 +469,25 @@ bool LP_guess(Board B, int n, int m, float X){
 	return success;
 }
 
-bool LP_guess_hint(Board B, int n, int m, int X, int Y){
+bool LP_guess_hinter(Board B, int n, int m, int X, int Y){
 	int BOARDSIZE = n*m;
-	int	dof_map[BOARDSIZE*BOARDSIZE*BOARDSIZE];
+	int	*dof_map = NULL;
 	int i, j, v, dof_count;
 	double	*sol = NULL;
 	bool success;
 	float score;
+
+	printf("cell <%d,%d>:\n",X,Y);
 
 	/* Check these */
 	i=X-1;
 	j=Y-1;
 
 	/* Autofill */
-	LPILP_autofill(B, n, m);
+	/* LPILP_autofill(B, n, m); */
 	
 	/* Count and create a mapping of the variables to be solved for */
+	dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
 	dof_count = map_variables(B, n, m, dof_map);
 
 	/* Allocate memory for the solution vector: */
@@ -425,7 +495,7 @@ bool LP_guess_hint(Board B, int n, int m, int X, int Y){
 	
 	success = LP_solver(n, m, dof_map, dof_count, sol);
 	
-	/* ~TODO~ ?? check: If the board is unsolvable, it is an error. */
+	printf("Here");
 	if (success) {		
 		if (B[i][j].num-1 < 0) {
 			printf("Legal values for cell <%d,%d>:\n",X,Y);
@@ -433,16 +503,19 @@ bool LP_guess_hint(Board B, int n, int m, int X, int Y){
 				if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v]) {
 					score = sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ];
 					if (score>0) {			
-						printf("value: %d, score:%2.1f\n",v,score);											
-						/* B[i][j].num = v+1;	 */							
+						printf("value: %d, score:%2.1f\n",v+1,score);											
 					}
 				}
 			}
 		} 
 	}
 
+	printf("Here2");
+
 	/* Free memory solution vector */	
 	free(sol);
+
+	printf("Here3");
 
 	return success;
 }

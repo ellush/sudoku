@@ -1,3 +1,6 @@
+#ifndef GAME_H
+#define GAME_H
+
 /*this module is meant to hold main game func*/
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,3 +21,5 @@ void autofill(Board B, int n, int m, list *lst, bool verbose);
 bool has_error(Board B,int n,int m);
 
 void mark_wrong_cells(Board B, int n, int m);
+
+#endif
