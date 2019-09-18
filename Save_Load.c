@@ -56,7 +56,7 @@ void save(char *filePath, Board b, int n, int m){
 	
 	fp = fopen(filePath, "w");
 	if(fp == NULL){
-		printf("Error! failed to save file. fopen returned NULL\n");
+		printf("Error: failed to save file. fopen returned NULL\n");
 		return;
 	}
 	
@@ -74,12 +74,12 @@ void save(char *filePath, Board b, int n, int m){
 	}
 	/*check for writing errors*/
 	if(ferror(fp)){
-		printf("Error! failed to save file. write error\n");
+		printf("Error: failed to save file. write error\n");
 		return;
 	}
 	/*close file*/
 	if(fclose(fp) == EOF){
-		printf("Error! failed to save file. fclose returned EOF\n");
+		printf("Error: failed to save file. fclose returned EOF\n");
 		return;
 	}
 	printf("file saved successfully under \"%s\"\n",filePath);
@@ -94,16 +94,15 @@ Board load(char *filePath, int *np, int *mp){
 	char c;
 	Board b = NULL;
 	
-	
 	fp = fopen(filePath, "r");
 	if(fp == NULL){
-		printf("Error! failed to load file \"%s\". no such file!\n", filePath);
+		printf("Error: failed to load file \"%s\". no such file\n", filePath);
 		return NULL;
 	}
 	
 	/*start reading*/
 	if(fscanf(fp, "%d",np) <= 0 || fscanf(fp, "%d",mp) <= 0 || *mp <= 0 || *np <= 0){
-		printf("Error! failed to load file. wrong format\n");
+		printf("Error: failed to load file. wrong format\n");
 		return NULL;
 	}
 	

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "Game.h"
 #include "Save_Load.h"
 #include "commands_modes.h"
@@ -114,21 +115,16 @@ void check_game_over(Board *b,int n,int m, int *modep, list *lst){
 
 /***************command funcs***************/
 void markErrors(int x, int *modep){
-	if(*modep == SOLVE){
-		if(x==1){
-			mark_errors = true;
-			return;
-		}
-		else if(x==0){
-			mark_errors = false;
-			return;
-		}
-		else{
-			printf("Error! must set \"mark_errors\" to either '1' or '0'");
-		}
+	if(x==1){
+		mark_errors = true;
+		return;
+	}
+	else if(x==0){
+		mark_errors = false;
+		return;
 	}
 	else{
-		printf("\"mark_errors\" is not available in the current mode. try switching to SOLVE mode\n");
+		printf("Error: must set \"mark_errors\" to either '1' or '0'\n");
 	}
 }
 
@@ -180,7 +176,7 @@ void edit(char *filepath, Board *b, int *np, int *mp, int *modep, list *lst){
 	add_move(lst);	
 	
 	/*if no fp make a empty 9X9 Board*/
-	if(filepath == NULL){
+	if(strcmp(filepath, "") == 0){
 		*np = 3;
 		*mp = 3;
 		*b = makeBoard(*b, *np,*mp);
@@ -210,10 +206,6 @@ void printBoard(Board b, int n, int m, int mode){
 		draw_board(n, m, b, false); /*last bool is "in_edit_mode"*/ 
 		return;
 	}
-	else if(mode == INIT){
-		printf("\"print_board\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
-		return;
-	}
 	else{
 		printf("Error! this is an error in printBoard func. mode has undifined value.\n");
 		assert(false);	
@@ -221,11 +213,10 @@ void printBoard(Board b, int n, int m, int mode){
 }
 
 void set_command(Board *b, int x, int y, int z,int n, int m, int *modep, list *lst){
-	if(*modep == INIT){
-		printf("\"set\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
+	if(set(*b, x, y, z, n, m, lst) < 0){
+		/*set failed, dont print;*/
 		return;
 	}
-	set(*b, x, y, z, n, m, lst);
 	if(*modep == SOLVE){
 		draw_board(n, m, *b, false);
 		check_game_over(b, n,m, modep, lst);
@@ -236,10 +227,6 @@ void set_command(Board *b, int x, int y, int z,int n, int m, int *modep, list *l
 }
 
 void validate(Board b, int n, int m, int mode){
-	if(mode == INIT){
-		printf("\"validate\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
-		return;
-	}
 	if(has_error(b,n,m)){
 		printf("Error: Board is erroneous. can not validate\n");
 		return;
@@ -248,10 +235,7 @@ void validate(Board b, int n, int m, int mode){
 }
 
 void guess(Board b, int n, int m, int mode /*, list* lst*/){
-	if(mode != SOLVE){
-		printf("\"guess\" is not available in the current mode. try switching to SOLVE mode\n");
-		return;
-	}
+	/*************************************stopped here, need todeal with the float problem*************/
 	if(has_error(b,n,m)){
 		printf("Error: Board is erroneous. can not guess\n");
 		return;
@@ -440,5 +424,5 @@ void exitgame(Board b, int n, int m, list* lst){
 }
 
 void invalid(){
-	printf("Error: invalid command\n");
+	printf("Invalid command\n");
 }

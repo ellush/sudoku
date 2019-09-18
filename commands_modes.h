@@ -25,5 +25,6 @@ a Board definition.
 #define RESET 17
 #define EXIT 18
 #define INVALID 19
+#define VOID 20
 
 #endif

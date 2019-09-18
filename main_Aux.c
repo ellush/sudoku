@@ -2,17 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "commands_modes.h" /*/line should move to interface*/
 #include "Commands.h"
-#include "parser.h"
-/*#include "Interface.h"*/
+#include "Interface.c"
 
 
 void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 	int command[4] = {0,0,0,0};
-	char *filepath = NULL; /*command string*/
+	char filepath[256]; /* max command string*/
 	
-	/*get_command(command, &filepath);*/
+	get_command(command, filepath, *modep);
 	/*array command now holds all parameters*/
 	switch(command[0]){
 		case SOLVE:
@@ -91,7 +89,11 @@ void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 		case INVALID:
 			invalid();
 			break;
-				
+		
+		case VOID:
+			/*do nothing*/;
+			break;
+			
 		default:
 			printf("Error! this is an error in get_command inside play_game func\n");
 			assert(false);			

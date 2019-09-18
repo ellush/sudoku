@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include "commands_modes.h"
 #include "main_Aux.h"
 
 
