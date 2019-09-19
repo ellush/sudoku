@@ -245,9 +245,9 @@ void guess(Board b, int n, int m, int mode , list* lst, float x){
 		return;
 	}
 	/*/guess;need to add changes to undo_lst*/
-	
-	LP_guess(b, n, m, x);
-	draw_board(n, m, b, false); /* delete this draw? guess should print if succesful, here is better than insid LP_guess, but either way goes*/
+	printf("float in lp guess %2.1f\n",x);
+	LP_guess(b, n, m, x, lst);
+	draw_board(n, m, b, false); /* delete this draw? */
 	/*/if need to - check_game_over(b, n,m, modep, lst);*/
 }
 
@@ -265,7 +265,7 @@ void generate(Board b, int n, int m, int mode , int i, int j, list* lst){
 		return;
 	}
 	/*/generate ;need to add changes to undo_lst*/
-	ILP_generate(b,n,m,i,j);
+	ILP_generate(b,n,m,i,j,lst);
 	draw_board(n, m, b, false);
 	/*/if need to - check_game_over(b, n,m, modep, lst);*/
 }

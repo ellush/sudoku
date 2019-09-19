@@ -54,10 +54,9 @@ void ILP_hint(Board B, int n, int m, int X, int Y){
 bool LP_guess(Board B, int n, int m, float X, list *lst){
 	int i, j;
 	bool s = false;
-/*	printf("float in lp guess %2.1f\n",X );*/
 	cpy_board = makeBoard(cpy_board,n,m);
 	copyboard(B,n,m,cpy_board);
-	LP_guesser(B,n,m,X);
+	s = LP_guesser(cpy_board,n,m,X);
 	if (s){
 		/*undo*/
 		new_move(lst);
