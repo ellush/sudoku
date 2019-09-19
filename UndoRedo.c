@@ -26,7 +26,7 @@ void extract_changes(Board b, sub_list* lst, bool undoing, bool in_reset){
 
 int undo(Board b, list *lst, bool in_reset){
 	if(lst->cur->next == NULL){ /*reached flag element*/
-		printf("Error! no moves to undo.\n");
+		printf("Error: no moves to undo.\n");
 		return -1;
 	}
 	extract_changes(b, &(lst->cur->l), true, in_reset);
@@ -36,7 +36,7 @@ int undo(Board b, list *lst, bool in_reset){
 
 int redo(Board b, list *lst){
 	if(lst->cur->prev == NULL){ /*reached first element*/
-		printf("Error! no moves to redo.\n");
+		printf("Error: no moves to redo.\n");
 		return -1;
 	}
 	cur_prev(lst);

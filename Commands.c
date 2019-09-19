@@ -227,7 +227,6 @@ void set_command(Board *b, int x, int y, int z,int n, int m, int *modep, list *l
 }
 
 void validate(Board b, int n, int m, int mode){
-	
 	if(has_error(b,n,m)){
 		printf("Error: Board is erroneous. can not validate\n");
 		return;
@@ -237,7 +236,6 @@ void validate(Board b, int n, int m, int mode){
 	} else{
 		printf("Validation failed: board is unsolvable\n");
 	}
-	
 }
 
 void guess(Board b, int n, int m, int mode , list* lst, float x){
@@ -253,10 +251,6 @@ void guess(Board b, int n, int m, int mode , list* lst, float x){
 }
 
 void generate(Board b, int n, int m, int mode , int i, int j, list* lst){
-	if(mode != EDIT){
-		printf("\"generate\" is not available in the current mode. try switching to EDIT mode\n");
-		return;
-	}
 	if((i < 0) || (i > (n*m*n*m))) {
 		printf("Error: %d not in range 0 - %d\n", i,n*m*n*m);
 		return;
@@ -276,12 +270,8 @@ void generate(Board b, int n, int m, int mode , int i, int j, list* lst){
 }
 
 void undo_command(Board b,int n, int m, int mode, list* lst){
-	if(mode == INIT){
-		printf("\"undo\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
-		return;
-	}
 	/*check if undo failed*/
-	if(undo(b, lst, false) < 0){ /*bool in_reset*/
+	if(undo(b, lst, false) < 0){ /*last param is bool in_reset*/
 		return;
 	}
 	mark_wrong_cells(b,n,m);
@@ -294,10 +284,6 @@ void undo_command(Board b,int n, int m, int mode, list* lst){
 }
 
 void redo_command(Board b, int n, int m, int mode, list* lst){
-	if(mode == INIT){
-		printf("\"redo\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
-		return;
-	}	
 	/*check if redo failed*/
 	if(redo(b, lst) < 0){
 		return;
@@ -312,10 +298,6 @@ void redo_command(Board b, int n, int m, int mode, list* lst){
 }
 
 void save_command(char *filepath, Board b, int n, int m, int mode){
-	if(mode == INIT){
-		printf("\"save\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
-		return;
-	}
 	if(mode == EDIT){
 		if(has_error(b,n,m)){
 			printf("Error: Board is erroneous. can not save\n");
@@ -333,10 +315,6 @@ void save_command(char *filepath, Board b, int n, int m, int mode){
 }
 
 void hint(Board b, int n, int m, int mode, int x, int y){
-	if(mode != SOLVE){
-		printf("\"hint\" is not available in the current mode. try switching to SOLVE mode\n");
-		return;
-	} 
 	/*user enters 1- based coor*/
 	x--;
 	y--;
@@ -362,14 +340,9 @@ void hint(Board b, int n, int m, int mode, int x, int y){
 		return;
 	}
 	ILP_hint(b, n, m, x, y);	
-	
 }
 
 void guess_hint(Board b, int n, int m, int mode, int x, int y){
-/*	if(mode != SOLVE){
-		printf("\"guess_hint\" is not available in the current mode. try switching to SOLVE mode\n");
-		return;
-	}*/
 	/*user enters 1- based coor*/
 	x--;
 	y--;
@@ -398,10 +371,6 @@ void guess_hint(Board b, int n, int m, int mode, int x, int y){
 }
 
 void num_solutions(Board b, int n, int m, int mode){
-	if(mode == INIT){
-		printf("\"num_solutions\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
-		return;
-	}
 	if(has_error(b,n,m)){
 		printf("Error: Board is erroneous. can not count solutions\n");
 		return;
@@ -410,10 +379,6 @@ void num_solutions(Board b, int n, int m, int mode){
 }
 
 void autofill_command(Board *b, int n, int m, int *modep, list *lst){
-	if(*modep != SOLVE){
-		printf("\"autofill\" is not available in the current mode. try switching to SOLVE mode\n");
-		return;
-	}
 	if(has_error(*b,n,m)){
 		printf("Error: Board is erroneous. can not autofill\n");
 		return;
@@ -425,10 +390,6 @@ void autofill_command(Board *b, int n, int m, int *modep, list *lst){
 }
 
 void reset_command(Board b, int n, int m, int mode, list* lst){
-	if(mode == INIT){
-		printf("\"reset\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
-		return;
-	}
 	reset(b, lst);
 	mark_wrong_cells(b,n,m);
 	if(mode == SOLVE){

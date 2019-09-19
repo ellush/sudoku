@@ -108,7 +108,7 @@ void get_command(int command[], char filepath[259], int mode, float *f){ 	/* com
 			command[1] = atoi(token);
 		}
 		else{
-			printf("Error: %s is not a number. must set \"mark_errors\" to either '1' or '0'\n",token);
+			printf("Error: %s is not an integer. must set \"mark_errors\" to either '1' or '0'\n",token);
 			command[0] = VOID;
 			return;
 		}
@@ -141,7 +141,7 @@ void get_command(int command[], char filepath[259], int mode, float *f){ 	/* com
 				command[i] = atoi(token);
 			}
 			else{
-				printf("Error: %s is not a number\n",token);
+				printf("Error: %s is not an integer\n",token);
 				command[0] = VOID;
 				return;
 			}
@@ -150,6 +150,7 @@ void get_command(int command[], char filepath[259], int mode, float *f){ 	/* com
 	else if(strcmp(token, "validate") == 0){
 		if(mode == INIT){
 			printf("\"validate\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
+			command[0] = VOID;
 			return;
 		}
 		command[0] = VALIDATE;
@@ -176,81 +177,139 @@ void get_command(int command[], char filepath[259], int mode, float *f){ 	/* com
 		}
 	}
 	else if(strcmp(token, "generate") == 0){
+		if(mode != EDIT){
+			printf("\"generate\" is not available in the current mode. try switching to EDIT mode\n");
+			command[0] = VOID;
+			return;
+		}
 		command[0] = GENERATE;
-		for(i=1; i<3; i++){
+		for(i=1; i<3; i++){/*only need 2 nums*/
 			
 			token = strtok(NULL, delimiter); /* get next part of user_input*/
-			
+			if(token == NULL){
+				printf("Error: not enough parameters\n");
+				command[0] = VOID;
+				return;
+			}
 			if(isnum(token)){
 				command[i] = atoi(token);
 			}
 			else{
-				command[0] = INVALID;
+				printf("Error: %s is not an integer\n",token);
+				command[0] = VOID;
 				return;
 			}
 		}
-		return;
 	}	
 	else if(strcmp(token, "undo") == 0){
+		if(mode == INIT){
+			printf("\"undo\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
+			command[0] = VOID;
+			return;
+		}
 		command[0] = UNDO;
-		return;
 	}
 	else if(strcmp(token, "redo") == 0){
+		if(mode == INIT){
+			printf("\"redo\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
+			command[0] = VOID;
+			return;
+		}	
 		command[0] = REDO;
-		return;
 	}
 	else if(strcmp(token, "save") == 0){
+		if(mode == INIT){
+			printf("\"save\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
+			command[0] = VOID;
+			return;
+		}
 		command[0] = SAVE;
-		token = strtok(NULL, delimiter);
-		/*to continue...*/
-		return;
+		token = strtok(NULL, delimiter);/*read filepath*/
+		if(token != NULL){	
+			strcpy(filepath, token);
+		}
+		else{
+			printf("Error: not enough parameters\n");
+			command[0] = VOID;
+			return;
+		}
 	}
 	else if(strcmp(token, "hint") == 0){
+		if(mode != SOLVE){
+			printf("\"hint\" is not available in the current mode. try switching to SOLVE mode\n");
+			command[0] = VOID;
+			return;
+		} 
 		command[0] = HINT;
-		for(i=1; i<3; i++){
+		for(i=1; i<3; i++){/*only need 2 nums*/
 			
 			token = strtok(NULL, delimiter); /* get next part of user_input*/
-			
+			if(token == NULL){
+				printf("Error: not enough parameters\n");
+				command[0] = VOID;
+				return;
+			}
 			if(isnum(token)){
 				command[i] = atoi(token);
 			}
 			else{
-				command[0] = INVALID;
+				printf("Error: %s is not an integer\n",token);
+				command[0] = VOID;
 				return;
 			}
 		}
-		return;
 	}
 	else if(strcmp(token, "guess_hint") == 0){
+		if(mode != SOLVE){
+			printf("\"guess_hint\" is not available in the current mode. try switching to SOLVE mode\n");
+			command[0] = VOID;
+			return;
+		}
 		command[0] = GUESS_HINT;
-		for(i=1; i<3; i++){
+		for(i=1; i<3; i++){/*only need 2 nums*/
 			
 			token = strtok(NULL, delimiter); /* get next part of user_input*/
-			
+			if(token == NULL){
+				printf("Error: not enough parameters\n");
+				command[0] = VOID;
+				return;
+			}
 			if(isnum(token)){
 				command[i] = atoi(token);
 			}
 			else{
-				command[0] = INVALID;
+				printf("Error: %s is not an integer\n",token);
+				command[0] = VOID;
 				return;
 			}
 		}
-		return;
 	}
 	else if(strcmp(token, "num_solutions") == 0){
+		if(mode == INIT){
+			printf("\"num_solutions\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
+			command[0] = VOID;
+			return;
+		}
 		command[0] = NUM_SOLUTIONS;
-		return;
-	}else if(strcmp(token, "autofill") == 0){
+	}
+	else if(strcmp(token, "autofill") == 0){
+		if(mode != SOLVE){
+			printf("\"autofill\" is not available in the current mode. try switching to SOLVE mode\n");
+			command[0] = VOID;
+			return;
+		}
 		command[0] = AUTOFILL;
-		return;
 	}
 	else if(strcmp(token, "reset") == 0){
+		if(mode == INIT){
+			printf("\"reset\" is not available in the current mode. try switching to SOLVE or EDIT mode\n");
+			command[0] = VOID;
+			return;
+		}
 		command[0] = RESET;
-		return;
 	}
 	else if(strcmp(token, "exit") == 0){
 		command[0] = EXIT;
-		return;
 	}
 	else{
 		command[0] = INVALID;
