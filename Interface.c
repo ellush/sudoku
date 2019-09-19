@@ -166,8 +166,8 @@ void get_command(int command[], char filepath[259], int mode, float *f){ 	/* com
 			command[0] = VOID;
 			return;
 		}
-		*f = strtof(token, &endptr);
-		/*check if strtof failed*/
+		*f = (float)strtod(token, &endptr);
+		/*check if strtod failed*/
 		if (*endptr != '\0'){
 			printf("Error: %s is not a valid float for guess\n",token);
 			command[0] = VOID;
