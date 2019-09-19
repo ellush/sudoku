@@ -189,6 +189,7 @@ void edit(char *filepath, Board *b, int *np, int *mp, int *modep, list *lst){
 		printf("No board. mode set to INIT\n");
 		*modep = INIT;
 		*b = NULL;
+		/*no need to delete board &list before return, both are deleted before intialization*/
 		return;
 	}
 	
