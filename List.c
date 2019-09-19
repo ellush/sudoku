@@ -110,12 +110,12 @@ void print_list(list *lst){
 }
 
 void delete_list(list *lst){
-	elem* cur = lst->head;
-	elem* next;
-	
 	if(lst == NULL){
 		return;
 	}
+	elem* cur = lst->head;
+	elem* next;
+	
 	
 	while(cur!=NULL){
 		next = cur->next;
