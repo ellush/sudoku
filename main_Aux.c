@@ -8,9 +8,9 @@
 
 void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 	int command[4] = {0,0,0,0};
-	char filepath[256]; /* max command string*/
-	
-	get_command(command, filepath, *modep);
+	char filepath[259]; /* max command string*/
+	float f = -1;
+	get_command(command, filepath, *modep, &f);
 	/*array command now holds all parameters*/
 	switch(command[0]){
 		case SOLVE:
@@ -40,12 +40,12 @@ void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 		
 		case GUESS:
 			/*/command needs work;*/
-			guess(*b, *np, *mp, *modep, undo_lst);
+			guess(*b, *np, *mp, *modep, undo_lst, f);
 			break;
 		
 		case GENERATE:
 			/*/command needs work;*/
-			generate(*b, *np, *mp, *modep, undo_lst);
+			generate(*b, *np, *mp, *modep, command[1],command[2], undo_lst);
 			break;
 		
 		case UNDO:

@@ -27,13 +27,13 @@ void settozero(int command[]){
 	}
 }
 
-void get_command(int command[], char filepath[256], int mode){ 	/* command is a 4 elemnt array*/
+void get_command(int command[], char filepath[259], int mode, float *f){ 	/* command is a 4 elemnt array*/
 	int i;
 	char* null_if_EOF;
-	char user_input[257]; 				/* assumed in project insructions max user_input length is 256 chars*/
+	char user_input[259]; /* assumed in project insructions max user_input length is 256 chars + '\n'*/
 	char* token = NULL;
 	const char *delimiter = " \t\r\n";/*new line is a new command*/
-
+	char *endptr;/*for checking strtof error*/
 	settozero(command);
 	
 	
@@ -44,10 +44,18 @@ void get_command(int command[], char filepath[256], int mode){ 	/* command is a 
 	/* get the first token */
 	token = strtok(user_input, delimiter);
 		
-	/*check EOF, this is a recent change*/
+	/*check EOF*/
 	if(null_if_EOF == NULL){		
 		token = "exit";
 	}
+	
+	/*check over 256 characters (+'\n' = 258)*/
+	if (strlen(user_input) > 258) {
+		printf("Error: entered over 256 characters\n");
+		command[0] = INVALID;
+		return;		
+	}
+	
 	/*check blank line*/
 	if(token == NULL){
 		printf("Error: a blank line is an invalid command...\n");
@@ -149,12 +157,23 @@ void get_command(int command[], char filepath[256], int mode){ 	/* command is a 
 	else if(strcmp(token, "guess") == 0){
 		if(mode != SOLVE){
 			printf("\"guess\" is not available in the current mode. try switching to SOLVE mode\n");
+			command[0] = VOID;
 			return;
 		}
-		/*************************************stopped here, need todeal with the float problem*************/
 		command[0] = GUESS;
 		token = strtok(NULL, delimiter);
-		/*to continue...*/
+		if(token == NULL){
+			printf("Error: not enough parameters\n");
+			command[0] = VOID;
+			return;
+		}
+		*f = strtof(token, &endptr);
+		/*check if strtof failed*/
+		if (*endptr != '\0'){
+			printf("Error: %s is not a valid float for guess\n",token);
+			command[0] = VOID;
+			return;
+		}
 	}
 	else if(strcmp(token, "generate") == 0){
 		command[0] = GENERATE;

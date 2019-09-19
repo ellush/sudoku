@@ -239,12 +239,6 @@ void validate(Board b, int n, int m, int mode){
 }
 
 void guess(Board b, int n, int m, int mode , list* lst, float x){
-		/*************************************stopped here, need todeal with the float problem*************/
-	if(mode != SOLVE){
-		printf("\"guess\" is not available in the current mode. try switching to SOLVE mode\n");
-		return;
-	} 
-
 	if(has_error(b,n,m)){
 		printf("Error: Board is erroneous. can not guess\n");
 		return;
@@ -252,7 +246,7 @@ void guess(Board b, int n, int m, int mode , list* lst, float x){
 	/*/guess;need to add changes to undo_lst*/
 	
 	LP_guess(b, n, m, x);
-	draw_board(n, m, b, false); /* delete this draw? */
+	draw_board(n, m, b, false); /* delete this draw? guess should print if succesful, here is better than insid LP_guess, but either way goes*/
 	/*/if need to - check_game_over(b, n,m, modep, lst);*/
 }
 
@@ -262,11 +256,11 @@ void generate(Board b, int n, int m, int mode , int i, int j, list* lst){
 		return;
 	}
 	if((i < 0) || (i > (n*m*n*m))) {
-		printf("Error: %d not in range\n", i);
+		printf("Error: %d not in range 0 - %d\n", i,n*m*n*m);
 		return;
 	}
 	if((j < 0) || (j > (n*m*n*m))) {
-		printf("Error: %d not in range\n", j);
+		printf("Error: %d not in range  0 - %d\n", i,n*m*n*m);
 		return;
 	}
 	if(has_error(b,n,m)){
@@ -365,7 +359,7 @@ void hint(Board b, int n, int m, int mode, int x, int y){
 		printf("Error: cell already contains a value\n");
 		return;
 	}
-	ILP_hint(b, n, m, x, y);	
+	//ILP_hint(b, n, m, x, y);	
 	
 }
 
