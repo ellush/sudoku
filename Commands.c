@@ -227,6 +227,7 @@ void set_command(Board *b, int x, int y, int z,int n, int m, int *modep, list *l
 }
 
 void validate(Board b, int n, int m, int mode){
+	
 	if(has_error(b,n,m)){
 		printf("Error: Board is erroneous. can not validate\n");
 		return;
@@ -236,6 +237,7 @@ void validate(Board b, int n, int m, int mode){
 	} else{
 		printf("Validation failed: board is unsolvable\n");
 	}
+	
 }
 
 void guess(Board b, int n, int m, int mode , list* lst, float x){
@@ -359,7 +361,7 @@ void hint(Board b, int n, int m, int mode, int x, int y){
 		printf("Error: cell already contains a value\n");
 		return;
 	}
-	//ILP_hint(b, n, m, x, y);	
+	ILP_hint(b, n, m, x, y);	
 	
 }
 
