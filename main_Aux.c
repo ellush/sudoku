@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "Commands.h"
-#include "Interface.c"
+#include "Interface.h"
 
 
 void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){

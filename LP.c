@@ -256,16 +256,12 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 	error = GRBoptimize(model);
 	if (error) goto QUIT;
 
-	printf("LP1");
-
 	/* Get the optimization status */
 	error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &optimstatus);
 	if (error) goto QUIT;		
 
 	/* Process the optimization results */
 	if (optimstatus == GRB_OPTIMAL){
-
-		printf("LP2");
 
 		/* Get the value of the objective function for the computed solution */
 		/* Returns a non-zero error result if no solution was found */
@@ -274,7 +270,6 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 		
 		/* If here -> The optimization was successful */
 
-		printf("LP3");
 		/* Read the solution - the assignment to each variable */
 		/* dof_count id the number of variables, the size of "sol" should match */
 		error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, dof_count, sol);
@@ -309,7 +304,6 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 		}
 		printf("\n~~~~ End of ILP Solver Debug ~~~~~:\n"); */	
 		
-		printf("LP4");
 		/* Write model solution' */
 		GRBupdatemodel(model);
 		error = GRBwrite(model, "sudoku.sol");
@@ -417,10 +411,11 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 bool LP_guesser(Board B, int n, int m, float X){
 	int BOARDSIZE = n*m;
 	int	*dof_map = NULL;
-	int i, j, v, dof_count;
-	double	*sol = NULL;
+	int i, j, k, v, dof_count, num_choices, rnd, choice;
+	float score, sum_of_weights;
+	double	*sol = NULL;	
+	float *scores = NULL;
 	bool success;
-	float score, max_score;
 
 	/* Autofill */
 	LPILP_autofill(B, n, m);
@@ -437,51 +432,73 @@ bool LP_guesser(Board B, int n, int m, float X){
 	printf("Listing possible values:\n"); /* delete */
 
 	if (success) {
+		
+		/* Allocate array for scores and values */
+		scores =(float*)malloc(BOARDSIZE*2*sizeof(float)); 
+
 		for (i = 0; i < BOARDSIZE; i++) {
 			for (j = 0; j < BOARDSIZE; j++) {
-				if (B[i][j].num-1 < 0)
-					max_score = 0;
+				if (B[i][j].num-1 < 0) {						
 					printf("cell <%d,%d>:",i+1,j+1); /* delete */
+
+					/* Find and count all legal values in B[i][j]: */
+					k=0; sum_of_weights=0; num_choices=0;
 					for (v = 0; v < BOARDSIZE; v++) {
-						if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v]){
+						if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] && is_legal_placement(B, i, j, v+1, n, m) ){
 							score = sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ];
 							if (score > 0)						/* delete */
 								printf("\033[1;32m");			/* delete */
 							printf("| %d - %2.1f ",v+1,score); 	/* delete */
 							printf("\033[0m");					/* delete */
 							if (score>=X) {
-								/* ~TODO~ Add a check: if placement of B[i][j].num is legal */
-								if (score>max_score){
-									max_score = score;
-									B[i][j].num = v+1;
-								}															
+								num_choices++;						
+								sum_of_weights += score*100;								 
+								*(scores+2*k) = score; 	/* store score */
+								*(scores+2*k+1) = v+1; 	/* store value */
+								k++;																	
 							}
 						}							
 					}
-					printf("\n");
+
+					printf("\n");				
+
+					/* printf("sum_of_weights: %2.1f\n",sum_of_weights); */
+
+					/* Choose one of the legal value options for B[i][j]: */
+
+					/* Generate a random number from 0 and smaller than sum_of_weights */
+					if ( sum_of_weights > 0 )
+						rnd = rand()%((int) sum_of_weights);
+
+					for(k=0; k<num_choices; k++) {						
+						choice = (int) *(scores+2*k+1);
+						if( rnd/100 < *(scores+2*k) && is_legal_placement(B, i, j, choice, n, m) ){							
+							B[i][j].num = choice;
+							printf("Chose: %d from %d choices (sum_of_weights=%2.1f) \n",choice,num_choices,sum_of_weights);
+						}
+						rnd -= (int) *(scores+2*k)*100;
+					}
+				}
 			}		
 		}
 	}
 
 	/* Free memory solution vector */	
 	free(sol);
+	free(scores);
 
 	return success;
 }
 
-bool LP_guess_hinter(Board B, int n, int m, int X, int Y){
+bool LP_guess_hinter(Board B, int n, int m, int i, int j){
 	int BOARDSIZE = n*m;
 	int	*dof_map = NULL;
-	int i, j, v, dof_count;
+	int v, dof_count;
 	double	*sol = NULL;
 	bool success;
 	float score;
 
-	printf("cell <%d,%d>:\n",X,Y);
-
-	/* Check these */
-	i=X-1;
-	j=Y-1;
+	printf("cell <%d,%d>:\n",i+1,j+1);
 
 	/* Autofill */
 	/* LPILP_autofill(B, n, m); */
@@ -495,10 +512,9 @@ bool LP_guess_hinter(Board B, int n, int m, int X, int Y){
 	
 	success = LP_solver(n, m, dof_map, dof_count, sol);
 	
-	printf("Here");
 	if (success) {		
 		if (B[i][j].num-1 < 0) {
-			printf("Legal values for cell <%d,%d>:\n",X,Y);
+			printf("Legal values for cell <%d,%d>:\n",i+1,j+1);
 			for (v = 0; v < BOARDSIZE; v++) {				
 				if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v]) {
 					score = sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ];
@@ -510,12 +526,8 @@ bool LP_guess_hinter(Board B, int n, int m, int X, int Y){
 		} 
 	}
 
-	printf("Here2");
-
 	/* Free memory solution vector */	
 	free(sol);
-
-	printf("Here3");
 
 	return success;
 }
