@@ -5,8 +5,6 @@
 #include <string.h>
 #include "commands_modes.h"
 
-
-
 bool isnum(char token[]){
 	unsigned int i;
 	if(token == NULL){

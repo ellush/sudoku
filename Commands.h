@@ -10,22 +10,6 @@
 #include "commands_modes.h"
 #include "LP_commands.h"
 
-
-/***************auxilary funcs for command funcs***************/
-/*func checks if cell has a conflict with a fixed cell*/
-bool check_fixed_conflict_cell(Board B ,int placement_row, int placement_col, int val, int n, int m);
-
-/*func checks if board has two fixed cells with conflicting values*/
-bool check_fixed_conflict(Board B,int n, int m);
-
-void make_no_fixed(Board b,int n,int m);
-
-void make_all_fixed(Board b,int n,int m);
-
-bool has_empty_cell(Board b,int n,int m);
-
-void check_game_over(Board *b,int n,int m, int *modep, list *lst);
-
 /***************command funcs***************/
 void markErrors(int x, int *modep);
 
