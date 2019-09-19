@@ -155,11 +155,11 @@ void get_command(int command[], char filepath[259], int mode, float *f){ 	/* com
 		command[0] = VALIDATE;
 	}
 	else if(strcmp(token, "guess") == 0){
-		if(mode != SOLVE){
+		/*if(mode != SOLVE){
 			printf("\"guess\" is not available in the current mode. try switching to SOLVE mode\n");
 			command[0] = VOID;
 			return;
-		}
+		}*/
 		command[0] = GUESS;
 		token = strtok(NULL, delimiter);
 		if(token == NULL){

@@ -51,13 +51,25 @@ void ILP_hint(Board B, int n, int m, int X, int Y){
 		deleteBoard(cpy_board,n ,m);
 }
 
-bool LP_guess(Board B, int n, int m, float X){
+bool LP_guess(Board B, int n, int m, float X, list *lst){
+	int i, j;
 	bool s = false;
+/*	printf("float in lp guess %2.1f\n",X );*/
 	cpy_board = makeBoard(cpy_board,n,m);
 	copyboard(B,n,m,cpy_board);
-	s = LP_guesser(cpy_board,n,m,X);
+	LP_guesser(B,n,m,X);
 	if (s){
-		copyboard(cpy_board, n, m, B);
+		/*undo*/
+		new_move(lst);
+		for(i = 0; i < (n*m); i++){
+			for(j = 0; j < (n*m); j++){
+				if((B[i][j].num == 0) && (cpy_board[i][j].num != 0)){
+					add_change(lst, B[i][j].num, cpy_board[i][j].num, i, j);
+					B[i][j].num = cpy_board[i][j].num;
+				}
+			}
+		}
+		/*copyboard(cpy_board, n, m, B);*/
 	} else{
 		printf("Guess failed!\n");
 	}
@@ -82,7 +94,7 @@ int find_empty_cells(Board B, int n, int m, int empty_cells[]){
 			if(B[i][j].num == 0){
 				empty_cells[c] = (m*n)*i + j;
  				c++;
-			}
+			} 
 		}
 	}
 	return c;
@@ -93,7 +105,7 @@ void swap( int ary[], int i, int j, int k){
     ary[i] = ary[j-1-k];
     ary[j-1-k] = temp;
 }
-
+/*select n random cells from c cells*/
 void select_n_random_cells(int n, int num_empty_cells[],int c, int state){
 	int i,j;
 
@@ -101,15 +113,14 @@ void select_n_random_cells(int n, int num_empty_cells[],int c, int state){
 		for (i = 0; i < c; i++){
 			num_empty_cells[i] = i;
 		}
-	}	
-
+	}		
 	for (j = 0; j < n; j++){
 		int num = rand()%(c-j);
 		swap(num_empty_cells, num, c,j);
 	}
 }
 
-/*tring to find random legal value for X empty cells */
+/*trying to find random legal value for X empty cells */
 bool choose_random_legal_val(Board cpy_board, int num_empty_cells[], int legal_val[],int n,int m, int x,int c){
 	int i, j, k;
 	int row, col;
@@ -139,8 +150,8 @@ bool choose_random_legal_val(Board cpy_board, int num_empty_cells[], int legal_v
 
 
 
-void ILP_generate(Board B, int n, int m, int X, int Y){
-	int c, i, row, col, index;
+void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
+	int c, i, j, row, col, index;
 	int iter_count = 0;
 	int *cells_index;
 	int *legal_val;
@@ -166,11 +177,8 @@ void ILP_generate(Board B, int n, int m, int X, int Y){
 		}	
 		do{
 			copyboard(B,n,m,cpy_board);
-
 			select_n_random_cells(X,cells_index,c,1); /*select X random cells from all empty cells in the board */
-				
-			if (choose_random_legal_val(cpy_board/*,empty_cells*/,cells_index,legal_val,n,m,X,c)){
-				draw_board(n,m,cpy_board,true);/*delete later!!!!!!!!*/
+			if (choose_random_legal_val(cpy_board,cells_index,legal_val,n,m,X,c)){
 				if (ILP_solve(cpy_board,n,m,true)){
 					break;	
 				}
@@ -178,7 +186,6 @@ void ILP_generate(Board B, int n, int m, int X, int Y){
 			iter_count++;
 		} while (iter_count < 1000);
 	}
-
 	if (iter_count == 1000){
 		printf("Error: generate failed!, tried 1000 iterations\n" );
 		goto END;
@@ -187,28 +194,56 @@ void ILP_generate(Board B, int n, int m, int X, int Y){
 		printf("Error: generate failed!\n" );
 		goto END;
 	}
-	
+	/*undo*/
+	new_move(lst);
 
-	/*choosing Y random cells*/
-	if(Y == 0){
-		clearboard(B,n,m);
-	} else if( Y == (m*n*m*n)){
-		copyboard(cpy_board,n,m,B);
-		/*game over?????????????*/
-	} else {
+	if((Y != 0) || (Y != (n*m*n*m))){
+		/*choosing Y random cells*/
 		select_n_random_cells(Y,cells_index,(n*m*n*m),0);
-
-	/*deleting all but Y cells*/
-		clearboard(B,n,m);	
-
+		/*mark the Y choosen cells as fixed in the copy board*/
 		for ( i = (n*m*n*m-1); i >= (n*m*n*m-Y); i--){
 			index = cells_index[i];
 			row = index/(n*m);
 			col = index%(m*n);
-			B[row][col].num = cpy_board[row][col].num;
+			cpy_board[row][col].fixed = true;
 		}
-				draw_board(n,m,cpy_board, true);/*delete later!!!!!!!!!!*/
- 	} 
+	}
+	/*deleting all but Y cells*/
+	if(Y == 0){ /*return empty board*/
+		for(i = 0; i < (n*m); i++){
+			for(j = 0; j < (n*m); j++){
+				if(B[i][j].num != 0){
+					add_change(lst, B[i][j].num, 0, i, j);
+					B[i][j].num = 0;
+				}
+			}
+		}
+	} else if (Y == (n*m*n*m)){ /*return solved board*/
+		for(i = 0; i < (n*m); i++){
+			for(j = 0; j < (n*m); j++){
+				if(B[i][j].num == 0){
+					add_change(lst, B[i][j].num, cpy_board[i][j].num, i, j);
+					B[i][j].num = cpy_board[i][j].num;
+				}
+			}
+		}
+	} else {
+		for(i = 0; i < (n*m); i++){
+			for(j = 0; j < (n*m); j++){
+				if(cpy_board[i][j].fixed && (B[i][j].num == 0)){
+					add_change(lst, B[i][j].num, cpy_board[i][j].num, i, j);
+					B[i][j].num = cpy_board[i][j].num;
+				} else if ((B[i][j].num != 0) && (!cpy_board[i][j].fixed)){
+					add_change(lst, B[i][j].num, 0, i, j);
+					B[i][j].num = 0;
+				}
+			}
+		}
+	}
+		draw_board(n,m,cpy_board, true);/*delete later!!!!!!!!!!*/
+ 	
+ 	mark_wrong_cells(B,n,m);
+	
 	END:
 	
 	deleteBoard(cpy_board,n ,m);
@@ -219,6 +254,12 @@ void ILP_generate(Board B, int n, int m, int X, int Y){
 
 
    
+
+
+
+
+
+
 
 
 

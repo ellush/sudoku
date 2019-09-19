@@ -245,18 +245,16 @@ void guess(Board b, int n, int m, int mode , list* lst, float x){
 		printf("Error: Board is erroneous. can not guess\n");
 		return;
 	}
-	/*/guess;need to add changes to undo_lst*/
-	
-	LP_guess(b, n, m, x);
-	draw_board(n, m, b, false); /* delete this draw? guess should print if succesful, here is better than insid LP_guess, but either way goes*/
+	LP_guess(b, n, m, x, lst);
+	draw_board(n, m, b, false); /* delete this draw? */
 	/*/if need to - check_game_over(b, n,m, modep, lst);*/
 }
 
 void generate(Board b, int n, int m, int mode , int i, int j, list* lst){
-	if(mode != EDIT){
+/*	if(mode != EDIT){
 		printf("\"generate\" is not available in the current mode. try switching to EDIT mode\n");
 		return;
-	}
+	} */
 	if((i < 0) || (i > (n*m*n*m))) {
 		printf("Error: %d not in range 0 - %d\n", i,n*m*n*m);
 		return;
@@ -270,7 +268,7 @@ void generate(Board b, int n, int m, int mode , int i, int j, list* lst){
 		return;
 	}
 	/*/generate ;need to add changes to undo_lst*/
-	ILP_generate(b,n,m,i,j);
+	ILP_generate(b, n, m, i, j, lst);
 	draw_board(n, m, b, false);
 	/*/if need to - check_game_over(b, n,m, modep, lst);*/
 }
