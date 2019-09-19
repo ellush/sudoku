@@ -11,7 +11,6 @@
 
 /*this set func recives parameters *as given by the user*, corrects them to 1- based,
 this func does not print Board*/
-/*this func needs to be reveiwed after error module was written*/
 int set(Board B, int row, int col, int val, int n,int  m, list *lst);
 
 /*this autofill func uses 3 stacks and the set func*/

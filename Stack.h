@@ -33,6 +33,3 @@ void double_pop(stack *stk1, data *d1, stack *stk2, data *d2);
 
 bool double_isEmpty(stack *stk1, stack *stk2);
 	
-	
-	
-	

@@ -1,5 +1,5 @@
 /* this is a header file to be shared by all modules requiring 
-a Board definition.
+commands & modes definition.
 */
 #ifndef HEADER_FILE2
 #define HEADER_FILE2

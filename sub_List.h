@@ -1,4 +1,4 @@
-/* implemantaition of a list, ech node contains 3 integers */
+/* implemantaition of a list, each node contains 3 integers */
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -4,5 +4,5 @@
 #include <ctype.h>
 #include <string.h>
 #include "commands_modes.h"
-
+/*reads user input*/
 void get_command(int command[], char filepath[259], int mode, float *f);
