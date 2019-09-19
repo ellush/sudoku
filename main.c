@@ -17,8 +17,6 @@ int main(){
 	int mode  = INIT;
 	int n,m;
 	
-	initialize_list(&undo_lst);
-
 	srand(time(NULL));
 
 	printf("WELCOME to our sudoku puzzle!\n");
