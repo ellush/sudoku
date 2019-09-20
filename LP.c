@@ -121,31 +121,13 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 		/* Randomize weights */
 		for (i = 0; i < dof_count; i++)
 			obj[i] = rand() % (3*BOARDSIZE) + 1;
-
-		/* Apply weights in each subgrid - bias towards each value appearing once in a subgrid */
-		/* for (v = 0; v < BOARDSIZE; v++) {   */
-		/* for (v = 0; v < 1; v++) {    
-			for (ig = 0; ig < n; ig++) {
-				for (jg = 0; jg < m; jg++) {					
-					for (i = ig*m; i < ig*m+1; i++) {
-						for (j = jg*n; j < jg*n+1; j++) {
-							if (dof_map[i*BOARDSIZE*BOARDSIZE + j*BOARDSIZE + v]) {
-								printf("Adding weight for cell <%d,%d> - value %d\n",i+1,j+1,v+1);
-								obj[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ] = 1000;		
-							}
-						}
-					}					
-				}
-			}
-		} */
-
+		
 		error = GRBnewmodel(env, &model, "sudoku LP ", dof_count, obj, NULL, ub, NULL, NULL);
 		
 		free(ub);
 		free(obj);		
 	}
 	if (error) goto QUIT;
-
 	
 	/* Apply Constrains: */
 
@@ -241,11 +223,6 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 	error = GRBsetintattr(model, "ModelSense", -1);
 	if (error) goto QUIT;
 
-	/*  debug constrains */
-	error = GRBupdatemodel(model);
-	if (error) goto QUIT;
-	GRBwrite(model,"debug.lp");	
-
 	/* Optimize model */
 	/* This routine performs the optimization and populates internal model attributes:
 	optimization status, solution, etc. */
@@ -333,7 +310,7 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 		/* Run solver for partially empty and valid board:*/
 			
 		/* Count and create a mapping of the variables to be solved for */
-		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));//dof_map is never freed!!
+		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
 		dof_count = map_variables(B, n, m, dof_map);
 
 		/* Allocate memory for the solution vector: */
@@ -358,7 +335,8 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 		}
 	}
 
-	/* Free memory solution vector */	
+	/* Free memory solution vector */
+	free(dof_map);
 	free(sol);
 
 	return success;
@@ -385,7 +363,7 @@ bool LP_guesser(Board B, int n, int m, float X){
 		/* Run solver for partially empty and valid board:*/
 
 		/* Count and create a mapping of the variables to be solved for */
-		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));//dof_map is never freed!!
+		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
 		dof_count = map_variables(B, n, m, dof_map);
 
 		/* Allocate memory for the solution vector: */
@@ -442,6 +420,7 @@ bool LP_guesser(Board B, int n, int m, float X){
 	}
 
 	/* Free memory solution vector */	
+	free(dof_map);
 	free(sol);
 	free(scores);
 
@@ -469,7 +448,7 @@ bool LP_guess_hinter(Board B, int n, int m, int i, int j){
 	} else {
 	
 		/* Count and create a mapping of the variables to be solved for */
-		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));//dof_map is never freed!!
+		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
 		dof_count = map_variables(B, n, m, dof_map);
 
 		/* Allocate memory for the solution vector: */
@@ -491,7 +470,8 @@ bool LP_guess_hinter(Board B, int n, int m, int i, int j){
 		}
 	}
 
-	/* Free memory solution vector */	
+	/* Free memory solution vector */
+	free(dof_map);
 	free(sol);
 
 	return success;
