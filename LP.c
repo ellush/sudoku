@@ -311,8 +311,8 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 
 		/* Allocate memory for the solution vector: */
 		sol = (double*)malloc(dof_count * sizeof(double));
-
-		success = ILP_solver(n, m, dof_map, dof_count, sol);	
+		
+		success = ILP_solver(n, m, dof_map, dof_count, sol);
 
 		if (success && apply) {
 			for (i = 0; i < BOARDSIZE; i++) {
@@ -329,6 +329,9 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 				}		
 			}
 		}
+
+		if ( has_empty_cell(B,n,m) )
+			success = false;
 	}
 
 	/* Free memory solution vector */
@@ -455,7 +458,7 @@ bool LP_guess_hinter(Board B, int n, int m, int i, int j){
 		if (success) {		
 			if (B[i][j].num-1 < 0) {			
 				for (v = 0; v < BOARDSIZE; v++) {				
-					if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v]) {
+					if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] && is_legal_placement(B, i, j, v+1, n, m)) {
 						score = sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ];
 						if (score>0) {			
 							printf("Value: %d, score:%3.2f\n",v+1,score);											

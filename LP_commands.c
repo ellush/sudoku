@@ -11,10 +11,12 @@ Board cpy_board;
  
 
 bool ILP_validate(Board B, int n, int m){
-	sol = ILP_solve(B,n,m,false);
+	cpy_board = makeBoard(cpy_board, n,m);
+	copyboard(B,n,m, cpy_board);	
+	sol = ILP_solve(cpy_board,n,m,false);
+	deleteBoard(cpy_board,n ,m);
 	return sol; 
 }
-
 
 void copyboard(Board B, int n, int m, Board cpy_board){
 	int i,j;
@@ -74,8 +76,7 @@ bool LP_guess_hint(Board B, int n, int m, int X, int Y){
 	deleteBoard(cpy_board,n ,m);
 	return true;
 }
-
-
+/*find num of empty cells in the board. Insert every cell index into an array*/
 int find_empty_cells(Board B, int n, int m, int empty_cells[]){
 	int c = 0;
 	int i,j;
@@ -184,13 +185,11 @@ void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
 		goto END;
 	} 
 
-	if((X == 0) && (!ILP_solve(cpy_board,n,m,true))){
-		printf("Error: generate failed! the board is unsolvable\n" );
-		goto END;
-	}
 	/*undo*/
 	new_move(lst);
 
+	printf("iter_count %d\n",iter_count );
+	draw_board(n,m,cpy_board,false);
 	if((Y != 0) || (Y != (n*m*n*m))){
 		/*choosing Y random cells*/
 		select_n_random_cells(Y,cells_index,(n*m*n*m),0);
