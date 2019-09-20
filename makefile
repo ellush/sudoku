@@ -37,3 +37,4 @@ Interface.o: Interface.c Interface.h commands_modes.h
 	$(CC) $(COMP_FLAG) -c $*.c
 clean:
 	rm -f $(OBJS) $(EXEC)
+all: $(EXEC)
