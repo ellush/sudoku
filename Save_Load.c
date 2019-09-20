@@ -68,7 +68,10 @@ void save(char *filePath, Board b, int n, int m){
 			if(b[i][j].fixed){
 				fprintf(fp,".");
 			}
-			fprintf(fp," ");
+			/*dont space after last*/
+			if(j != n*m-1){
+				fprintf(fp," ");
+			}
 		}
 		fprintf(fp, "\n");
 	}
