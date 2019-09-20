@@ -105,7 +105,7 @@ void get_command(int command[], char filepath[259], int mode, float *f){ 	/* com
 			command[1] = atoi(token);
 		}
 		else{
-			printf("Error: %s is not an integer. must set \"mark_errors\" to either '1' or '0'\n",token);
+			printf("Error: %s is not a positive integer. must set \"mark_errors\" to either '1' or '0'\n",token);
 			command[0] = VOID;
 			return;
 		}
@@ -138,7 +138,7 @@ void get_command(int command[], char filepath[259], int mode, float *f){ 	/* com
 				command[i] = atoi(token);
 			}
 			else{
-				printf("Error: %s is not an integer\n",token);
+				printf("Error: %s is not a positive integer\n",token);
 				command[0] = VOID;
 				return;
 			}
@@ -192,7 +192,7 @@ void get_command(int command[], char filepath[259], int mode, float *f){ 	/* com
 				command[i] = atoi(token);
 			}
 			else{
-				printf("Error: %s is not an integer\n",token);
+				printf("Error: %s is not a positive integer\n",token);
 				command[0] = VOID;
 				return;
 			}
@@ -250,7 +250,7 @@ void get_command(int command[], char filepath[259], int mode, float *f){ 	/* com
 				command[i] = atoi(token);
 			}
 			else{
-				printf("Error: %s is not an integer\n",token);
+				printf("Error: %s is not a positive integer\n",token);
 				command[0] = VOID;
 				return;
 			}
@@ -275,7 +275,7 @@ void get_command(int command[], char filepath[259], int mode, float *f){ 	/* com
 				command[i] = atoi(token);
 			}
 			else{
-				printf("Error: %s is not an integer\n",token);
+				printf("Error: %s is not a positive integer\n",token);
 				command[0] = VOID;
 				return;
 			}
