@@ -1,5 +1,5 @@
 
 *add undo/redo to generate and guess
 *check print and save format on nova
-*missing flags on makefile! should hold: -ansi -Wall -Wextra -Werror -pedantic-errors
-holds: -ansi -Wall
+*guess cannot recieve float>1
+*gurobi prints!!! GRBsetintparam(env, GRB_INT_PAR_LOGTOCONSOLE, 0)
