@@ -26,14 +26,15 @@ int set(Board B, int row, int col, int val, int n,int  m, list *lst){
 	/*fix parameters to 0-based*/
 	row--;
 	col--;
-	if(row > n*m-1 || row < 0){ 
-		printf("Error: row coordinate is not in range 1 - %d\n",n*m);
-		return -1;
-	}
+	/*revese row and col*/
 	if(col > n*m-1 || col < 0){
 		printf("Error: column coordinate is not in range 1 - %d\n",n*m);
 		return -1;
 	}
+	if(row > n*m-1 || row < 0){ 
+		printf("Error: row coordinate is not in range 1 - %d\n",n*m);
+		return -1;
+	}	
 	if(val > n*m || val < 0){
 		printf("Error: value is not in range 0 - %d\n", n*m);
 		return -1;
@@ -108,8 +109,8 @@ void autofill(Board B, int n, int m, list *lst){
 		
 		/*make change*/
 		B[i][j].num = val;
-		
-		printf("set %d in cell <%d,%d>\n",val, i+1,j+1); 
+		/*revese row and col*/
+		printf("set %d in cell <%d,%d>\n",val, j+1, i+1); 
 	}
 	mark_wrong_cells(B,n,m);
 	return;

@@ -13,12 +13,14 @@ void extract_changes(Board b, sub_list* lst, bool undoing, bool in_reset){
 		if(undoing){
 			b[cur->x][cur->y].num = cur->oldval;
 			if(!in_reset){
-				printf("Changed cell <%d,%d> from %d to %d\n", cur->x+1, cur->y+1, cur->newval, cur->oldval);
+				/*revese row and col*/
+				printf("Changed cell <%d,%d> from %d to %d\n",cur->y+1, cur->x+1, cur->newval, cur->oldval);
 			}		
 		}
 		else{
 			b[cur->x][cur->y].num = cur->newval;
-			printf("Changed cell <%d,%d> from %d to %d\n", cur->x+1, cur->y+1, cur->oldval, cur->newval);
+			/*revese row and col*/
+			printf("Changed cell <%d,%d> from %d to %d\n", cur->y+1, cur->x+1, cur->oldval, cur->newval);
 		}
 		cur = cur->next;		
 	}	

@@ -30,7 +30,8 @@ void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 			break;	
 		
 		case SET:
-			set_command(b, command[1],command[2], command[3], *np, *mp, modep, undo_lst);
+			/*revese row and col*/
+			set_command(b,command[2] ,command[1], command[3], *np, *mp, modep, undo_lst);
 			break;
 		
 		case VALIDATE:
@@ -58,11 +59,13 @@ void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 			break;
 		
 		case HINT:
-			hint(*b, *np, *mp, command[1],command[2]);
+			/*revese row and col*/
+			hint(*b, *np, *mp, command[2], command[1]);
 			break;
 		
 		case GUESS_HINT:
-			guess_hint(*b, *np, *mp, command[1],command[2]);
+			/*revese row and col*/
+			guess_hint(*b, *np, *mp, command[2],command[1]);
 			break;
 		
 		case NUM_SOLUTIONS:
