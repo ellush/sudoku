@@ -1,5 +1,0 @@
-
-*add undo/redo to generate and guess
-*check print and save format on nova
-*guess cannot recieve float>1
-*gurobi prints!!! GRBsetintparam(env, GRB_INT_PAR_LOGTOCONSOLE, 0)
