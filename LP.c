@@ -335,7 +335,7 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 	if ( !has_empty_cell(B,n,m) ) {
 		success = true; /* Board is full and valid */
 	} else {
-		/* Run solver for partially empty and valid board*/
+		/* Run solver for partially empty and valid board:*/
 			
 		/* Count and create a mapping of the variables to be solved for */
 		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
@@ -386,7 +386,8 @@ bool LP_guesser(Board B, int n, int m, float X){
 	if ( !has_empty_cell(B,n,m) ) {
 		success = true; /* Board is full and valid */
 	} else {
-		/* Run solver for partially empty and valid board*/
+
+		/* Run solver for partially empty and valid board:*/
 
 		/* Count and create a mapping of the variables to be solved for */
 		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
@@ -396,8 +397,6 @@ bool LP_guesser(Board B, int n, int m, float X){
 		sol = (double*)malloc(dof_count * sizeof(double));
 
 		success = LP_solver(n, m, dof_map, dof_count, sol);
-
-		printf("Listing possible values:\n"); /* delete */
 
 		if (success) {
 			
@@ -435,17 +434,15 @@ bool LP_guesser(Board B, int n, int m, float X){
 						printf("Number of choices: %d \n",num_choices);
 
 						/* Generate a random number from 0 and smaller than sum_of_weights */
-						if ( num_choices>0 && sum_of_weights > 0 ){
+						if ( num_choices>0 && ((int) sum_of_weights)>0 ){
 							rnd = rand()%((int) sum_of_weights);
 						}
 
 						k=0;
 						while (k<num_choices) {
 							choice = (int) scores[2*k+1];
-							/* printf("rnd = %d\n",rnd); */			/* delete */
 							if( ( rnd < (int) (scores[2*k]*100) ) && is_legal_placement(B, i, j, choice, n, m) ){							
 								B[i][j].num = choice;
-								/* printf("Chose: %d from %d choices (sum_of_weights=%2.1f, rnd/100=%2.1f) \n",choice,num_choices,sum_of_weights, (float)rnd/100 ); */
 								k = num_choices; /* end loop */
 							} else {
 								rnd -= (int) (scores[2*k]*100);
