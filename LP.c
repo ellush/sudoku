@@ -80,6 +80,31 @@ int map_variables(Board B, int n, int m, int dof_map[]){
 	return dof_count;
 }
 
+
+bool LP_has_solution(Board B, int n, int m, int dof_map[]){
+	
+	int BOARDSIZE = n*m;	
+	int i, j, v, sol_count;		
+
+	for (i = 0; i < BOARDSIZE; i++) {
+		for (j = 0; j < BOARDSIZE; j++) {
+			if (B[i][j].num == 0) {
+				sol_count = 0;		
+				for (v = 0; v < BOARDSIZE; v++) {
+					if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v]){
+						sol_count++;
+					}							
+				}
+				if (sol_count == 0){
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
+
 bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool ILP){
 	
 	int BOARDSIZE = n*m;	
@@ -309,10 +334,13 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
 		dof_count = map_variables(B, n, m, dof_map);
 
-		/* Allocate memory for the solution vector: */
-		sol = (double*)malloc(dof_count * sizeof(double));
-		
-		success = ILP_solver(n, m, dof_map, dof_count, sol);
+		if ( LP_has_solution(B,n,m,dof_map) ) {
+			/* Allocate memory for the solution vector: */
+			sol = (double*)malloc(dof_count * sizeof(double));
+			success = ILP_solver(n, m, dof_map, dof_count, sol);
+		} else {
+			success = false;
+		}
 
 		if (success && apply) {
 			for (i = 0; i < BOARDSIZE; i++) {
@@ -328,10 +356,7 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 						}
 				}		
 			}
-		}
-
-		if ( has_empty_cell(B,n,m) )
-			success = false;
+		}		
 	}
 
 	/* Free memory solution vector */
