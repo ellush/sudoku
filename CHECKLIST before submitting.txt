@@ -1,2 +1,1 @@
 *debug.lp & debug.sol 
-*dof_map freed
