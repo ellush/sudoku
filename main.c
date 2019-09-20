@@ -20,7 +20,7 @@ int main(){
 	srand(time(NULL));
 
 	printf("WELCOME to our sudoku puzzle!\n");
-	printf("i want to play a game...\n");
+	printf("we want to play a game...\n\n");
 	do{
 		
 		play_game(&b,&mode,&n,&m, &undo_lst);
