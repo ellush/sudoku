@@ -117,10 +117,12 @@ void check_game_over(Board *b,int n,int m, int *modep, list *lst){
 void markErrors(int x){
 	if(x==1){
 		mark_errors = true;
+		printf("mark_errors set to '1'\n");
 		return;
 	}
 	else if(x==0){
 		mark_errors = false;
+		printf("mark_errors set to '0'\n");
 		return;
 	}
 	else{
