@@ -168,7 +168,7 @@ void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
     /*insert into empty_cells array indexs of all empty cells in the board. return c = #empty cells*/
 	c = find_empty_cells(B,n,m, cells_index);
 	if (X > c){
-		printf("Error: %d is larger then numer of empty cells\n",X);	
+		printf("Error: %d is larger than number of empty cells\n",X);	
 		/*free resources*/
 		goto END;
 	} 
