@@ -250,19 +250,5 @@ void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
 	deleteBoard(cpy_board,n ,m);
 	free(legal_val);
 	free(cells_index);
-	}
-
-
-
-   
-
-
-
-
-
-
-
-
-
-
+}
 
