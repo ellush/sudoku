@@ -254,17 +254,9 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 
 		success = true;
 
-	} else if (optimstatus == GRB_INF_OR_UNBD || optimstatus == GRB_INFEASIBLE || optimstatus == GRB_UNBOUNDED)
-		printf("LP (Gurobi) failed: Model is infeasible or unbounded (Code: %d)\n",optimstatus);
-	else
-		printf("LP (Gurobi) failed: Optimization failed (Code: %d)\n",optimstatus);	
+	}
 
-	QUIT:
-		
-	/* Fatal error reporting */
-	if (error) {
-		printf("LP (Gurobi) fatal ERROR: %s\n", GRBgeterrormsg(env));	
-	}	
+	QUIT:	
 	
 	/* Free model */
 	if ( model != NULL )

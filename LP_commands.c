@@ -159,6 +159,11 @@ void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
 		/*free resources*/
 		goto END;
 	} 
+	copyboard(B,n,m,cpy_board);
+	if (!ILP_solve(cpy_board,n,m,true)){
+		printf("Error: generate failed! the board is unsolvable\n" );
+		goto END;
+	}
 	if (X > 0){
 		for (i = 0; i < (n*m); i++){
 			legal_val[i] = i+1;
@@ -177,9 +182,8 @@ void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
 	if (iter_count == 1000){
 		printf("Error: generate failed!, tried 1000 iterations\n" );
 		goto END;
-	} else if( X == 0){
-		copyboard(B,n,m,cpy_board);
-	}
+	} 
+
 	if((X == 0) && (!ILP_solve(cpy_board,n,m,true))){
 		printf("Error: generate failed! the board is unsolvable\n" );
 		goto END;
