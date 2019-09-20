@@ -13,10 +13,10 @@
 #include "commands_modes.h"
 #include "LP_commands.h"
 
-
+/***************auxilary funcs for command funcs***************/
 bool has_empty_cell(Board b,int n,int m);
 /***************command funcs***************/
-void markErrors(int x/*, int *modep*/);
+void markErrors(int x);
 
 void solve_command(char *filepath, Board *b, int *np, int *mp, int *modep, list *lst);
 
@@ -28,7 +28,7 @@ void set_command(Board *b, int x, int y, int z,int n, int m, int *modep, list *l
 
 void validate(Board b, int n, int m/*, int mode*/);
 
-void guess(Board b, int n, int m,/* int *modep,*/ list* lst, float x);
+void guess(Board *b, int n, int m,/* int *modep,*/ list* lst, float x);
 
 void generate(Board b, int n, int m/*, int mode*/, int i, int j, list* lst);
 

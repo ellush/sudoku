@@ -14,7 +14,7 @@ this func does not print Board*/
 int set(Board B, int row, int col, int val, int n,int  m, list *lst);
 
 /*this autofill func uses 3 stacks and the set func*/
-void autofill(Board B, int n, int m, list *lst, bool verbose);
+void autofill(Board B, int n, int m, list *lst);
 
 /*func checks if there exists a wrong cell*/
 bool has_error(Board B,int n,int m);

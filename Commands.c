@@ -114,7 +114,7 @@ void check_game_over(Board *b,int n,int m, int *modep, list *lst){
 }
 
 /***************command funcs***************/
-void markErrors(int x/*, int *modep*/){
+void markErrors(int x){
 	if(x==1){
 		mark_errors = true;
 		return;
@@ -129,8 +129,10 @@ void markErrors(int x/*, int *modep*/){
 }
 
 void solve_command(char *filepath, Board *b, int *np, int *mp, int *modep, list *lst){
+	if(*modep != SOLVE){
+		printf("mode set to SOLVE\n");
+	}
 	*modep = SOLVE;
-	printf("mode set to SOLVE\n");
 	/*delete old board and list, delete empty board and list is ok*/
 	deleteBoard(*b,*np, *mp);
 	
@@ -165,8 +167,11 @@ void solve_command(char *filepath, Board *b, int *np, int *mp, int *modep, list 
 }
 
 void edit(char *filepath, Board *b, int *np, int *mp, int *modep, list *lst){
+	if(*modep != EDIT){
+		printf("mode set to EDIT\n");
+	}
 	*modep = EDIT;
-	printf("mode set to EDIT\n");
+	
 	/*delete old board and list, delete empty board and list is ok*/
 	deleteBoard(*b,*np, *mp);
 
@@ -239,19 +244,18 @@ void validate(Board b, int n, int m){
 	}
 }
 
-void guess(Board b, int n, int m, /*int *modep,*/ list* lst, float x){
+void guess(Board *b, int n, int m, int *modep, list* lst, float x){
 	if((x < 0) || (x > 1)){
 		printf("Error: value is not in range 0 - 1\n");
 		return;
 	}
-	if(has_error(b,n,m)){
+	if(has_error(*b,n,m)){
 		printf("Error: Board is erroneous. can not guess\n");
 		return;
 	}
-	printf("float in lp guess %2.1f\n",x);
-	LP_guess(b, n, m, x, lst);
-	draw_board(n, m, b, false); /* delete this draw? */
-	/*check_game_over(b, n,m, modep, lst);*/
+	LP_guess(*b, n, m, x, lst);
+	draw_board(n, m, *b, false);
+	check_game_over(b, n,m, modep, lst);
 }
 
 void generate(Board b, int n, int m, int i, int j, list* lst){
@@ -305,7 +309,11 @@ void save_command(char *filepath, Board b, int n, int m, int mode){
 			printf("Error: Board is erroneous. can not save\n");
 			return;
 		}
-		/*/validate, printf("Error: Board has no solution. can not save\n");*/
+		/*validate*/
+		if (!ILP_validate(b,n,m)){
+			printf("Error: Validation failed. can not save\n");
+			return;
+		}
 		make_all_fixed(b,n,m);
 	}
 	/*save file in EDIT or SOLVE mode*/
@@ -385,8 +393,8 @@ void autofill_command(Board *b, int n, int m, int *modep, list *lst){
 		printf("Error: Board is erroneous. can not autofill\n");
 		return;
 	}
-	/* autofill in verbose mode: */
-	autofill(*b, n, m, lst, true); 
+	/* autofill */
+	autofill(*b, n, m, lst); 
 	draw_board(n, m, *b, false);
 	check_game_over(b, n,m, modep, lst);
 }

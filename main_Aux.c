@@ -34,12 +34,11 @@ void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 			break;
 		
 		case VALIDATE:
-			/*/command needs work;*/
 			validate(*b, *np, *mp);
 			break;
 		
 		case GUESS:
-			guess(*b, *np, *mp, /*modep,*/undo_lst, f);
+			guess(b, *np, *mp, modep,undo_lst, f);
 			break;
 		
 		case GENERATE:
@@ -87,7 +86,7 @@ void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 			break;
 		
 		case VOID:
-			/*do nothing*/;
+			/*do nothing*/
 			break;
 			
 		default:
