@@ -3,25 +3,12 @@
 #include <stdbool.h>
 #include <string.h>
 #include "Game_board.h"
-#include "Game.h"
 #include "LP.h"
-#include "print.h" 
 #include "Save_Load.h"
 
 bool sol;
 Board cpy_board;
  
-
-/*to delete later*/
-bool solve_ILP(Board B, int n, int m){	
-	sol = ILP_solve(B,n,m,true);
-	return sol;
-}
-
-bool solve_LP(Board B, int n, int m){	
-	sol = LP_guesser(B,n,m,0.001);
-	return sol;
-}
 
 bool ILP_validate(Board B, int n, int m){
 	sol = ILP_solve(B,n,m,false);
