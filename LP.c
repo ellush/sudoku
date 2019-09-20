@@ -119,6 +119,10 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 		obj = (double*)malloc(dof_count * sizeof(double));
 
 		/* Randomize weights */
+		/* Note: Randomization in the solution is realized by arbitrary applying different weights to the variables.
+		To prevent a "lock" of the solution, the number of weights must be greater than the maximum number of 
+		variables (=BOARDSIZE).	Trials were performed starting with twice the amount of variables. 
+		It seems that three times the amount of variables is good enough. */
 		for (i = 0; i < dof_count; i++)
 			obj[i] = rand() % (3*BOARDSIZE) + 1;
 		
