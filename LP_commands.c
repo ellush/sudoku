@@ -141,11 +141,12 @@ bool choose_random_legal_val(Board cpy_board, int num_empty_cells[], int legal_v
 
 
 
-void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
+int ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
 	int c, i, j, row, col, index;
 	int iter_count = 0;
 	int *cells_index;
 	int *legal_val;
+	int returnval;
 
 	/*allocate int[] of size c*/
 	cells_index = (int*)malloc(n*m*n*m*sizeof(int));
@@ -157,12 +158,14 @@ void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
 	c = find_empty_cells(B,n,m, cells_index);
 	if (X > c){
 		printf("Error: %d is larger than number of empty cells\n",X);	
+		returnval = -1;
 		/*free resources*/
 		goto END;
 	} 
 	copyboard(B,n,m,cpy_board);
 	if (!ILP_solve(cpy_board,n,m,true)){
 		printf("Error: generate failed! the board is unsolvable\n" );
+		returnval = -1;
 		goto END;
 	}
 	if (X > 0){
@@ -182,14 +185,13 @@ void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
 	}
 	if (iter_count == 1000){
 		printf("Error: generate failed!, tried 1000 iterations\n" );
+		returnval = -1;
 		goto END;
 	} 
 
 	/*undo*/
 	new_move(lst);
 
-	printf("iter_count %d\n",iter_count );
-	draw_board(n,m,cpy_board,false);
 	if((Y != 0) || (Y != (n*m*n*m))){
 		/*choosing Y random cells*/
 		select_n_random_cells(Y,cells_index,(n*m*n*m),0);
@@ -234,11 +236,12 @@ void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
 		}
 	} 	
  	mark_wrong_cells(B,n,m);
-	
+	returnval = 1;
 	END:
 	
 	deleteBoard(cpy_board,n ,m);
 	free(legal_val);
 	free(cells_index);
+	return returnval;
 }
 

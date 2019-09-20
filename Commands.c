@@ -273,8 +273,10 @@ void generate(Board b, int n, int m, int i, int j, list* lst){
 		printf("Error: Board is erroneous. can not generate\n");
 		return;
 	}
-	ILP_generate(b,n,m,i,j,lst);
-	draw_board(n, m, b, false);
+	if(ILP_generate(b,n,m,i,j,lst) > 0){;
+		/*succesful*/
+		draw_board(n, m, b, false);
+	}
 }
 
 void undo_command(Board b,int n, int m, int mode, list* lst){

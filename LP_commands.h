@@ -19,6 +19,6 @@ bool LP_guess_hint(Board B, int n, int m, int X, int Y);
 
 void copyboard(Board B, int n, int m, Board cpy_board);
 
-void ILP_generate(Board B, int n, int m,  int X, int Y, list *lst);
+int ILP_generate(Board B, int n, int m,  int X, int Y, list *lst);
 
 #endif
