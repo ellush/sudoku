@@ -56,8 +56,7 @@ void get_command(int command[], char filepath[259], int mode, float *f){ 	/* com
 	
 	/*check blank line*/
 	if(token == NULL){
-		printf("Error: a blank line is an invalid command...\n");
-		command[0] = INVALID;
+		command[0] = VOID;
 		return;
 	}
 	
