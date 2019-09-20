@@ -310,7 +310,7 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 		/* Run solver for partially empty and valid board:*/
 			
 		/* Count and create a mapping of the variables to be solved for */
-		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
+		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));//dof_map is never freed!!
 		dof_count = map_variables(B, n, m, dof_map);
 
 		/* Allocate memory for the solution vector: */
@@ -363,7 +363,7 @@ bool LP_guesser(Board B, int n, int m, float X){
 		/* Run solver for partially empty and valid board:*/
 
 		/* Count and create a mapping of the variables to be solved for */
-		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
+		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));//dof_map is never freed!!
 		dof_count = map_variables(B, n, m, dof_map);
 
 		/* Allocate memory for the solution vector: */
@@ -448,7 +448,7 @@ bool LP_guess_hinter(Board B, int n, int m, int i, int j){
 	} else {
 	
 		/* Count and create a mapping of the variables to be solved for */
-		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
+		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));//dof_map is never freed!!
 		dof_count = map_variables(B, n, m, dof_map);
 
 		/* Allocate memory for the solution vector: */
