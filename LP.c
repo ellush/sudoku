@@ -18,8 +18,7 @@ bool LPILP_autofill(Board B, int n, int m){
 			if(B[i][j].num == 0){
 				if(has_single_val(B,i,j,&v,n,m)){
 					B[i][j].num = v;
-					filled = true;
-					printf("Autofill: Set %d in cell <%d,%d>\n",v, i+1,j+1); 		/* delete */
+					filled = true;				
 				}
 			}
 		}
@@ -235,8 +234,8 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 	free(val);
 	
 	/* Turn off console logging */
-	/* error = GRBsetintparam(GRBgetenv(model), "OutputFlag", 0);
-	if (error) goto QUIT; */
+	error = GRBsetintparam(GRBgetenv(model), "OutputFlag", 0);
+	if (error) goto QUIT;
 
 	/* The objective is to maximize the cost function (effective only for LP) */
 	error = GRBsetintattr(model, "ModelSense", -1);
@@ -270,11 +269,7 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 		/* Read the solution - the assignment to each variable */
 		/* dof_count id the number of variables, the size of "sol" should match */
 		error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, dof_count, sol);
-		if (error) goto QUIT;
-		
-		/* Write model solution' */
-		GRBupdatemodel(model);
-		error = GRBwrite(model, "debug.sol");
+		if (error) goto QUIT;			
 
 		success = true;
 
@@ -406,17 +401,12 @@ bool LP_guesser(Board B, int n, int m, float X){
 			for (i = 0; i < BOARDSIZE; i++) {
 				for (j = 0; j < BOARDSIZE; j++) {
 					if (B[i][j].num-1 < 0) {						
-						printf("cell <%d,%d>:",i+1,j+1); /* delete */
 
 						/* Find and count all legal values in B[i][j]: */
 						k=0; sum_of_weights=0; num_choices=0;
 						for (v = 0; v < BOARDSIZE; v++) {
 							if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] && is_legal_placement(B, i, j, v+1, n, m) ){
-								score = sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ];
-								if (score > 0)						/* delete */
-									printf("\033[1;32m");			/* delete */
-								printf("| %d - %3.2f ",v+1,score); 	/* delete */
-								printf("\033[0m");					/* delete */
+								score = sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ];								
 								if (score>=X) {
 									num_choices++;						
 									sum_of_weights += score*100;								 
@@ -427,12 +417,8 @@ bool LP_guesser(Board B, int n, int m, float X){
 							}							
 						}
 
-						printf("\n");				
-
 						/* Choose one of the legal value options for B[i][j]: */
-
-						printf("Number of choices: %d \n",num_choices);
-
+					
 						/* Generate a random number from 0 and smaller than sum_of_weights */
 						if ( num_choices>0 && ((int) sum_of_weights)>0 ){
 							rnd = rand()%((int) sum_of_weights);
@@ -475,7 +461,7 @@ bool LP_guess_hinter(Board B, int n, int m, int i, int j){
 	/* Autofill */
 	LPILP_autofill(B, n, m);
 
-	printf("Legal values for cell <%d,%d>:\n",i+1,j+1);
+	printf("Legal values for cell <%d,%d>:\n",j+1,i+1);
 
 	if(has_single_val(B,i,j,&v,n,m)){
 		printf("Single value: %d\n",v);

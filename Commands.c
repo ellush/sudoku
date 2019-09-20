@@ -328,12 +328,13 @@ void hint(Board b, int n, int m, int x, int y){
 	/*user enters 1- based coor*/
 	x--;
 	y--;
-	if(x > n*m-1 || x < 0){ 
-		printf("Error: row coordinate is not in range 1 - %d\n",n*m);
-		return;
-	}
+
 	if(y > n*m-1 || y < 0){
 		printf("Error: column coordinate is not in range 1 - %d\n",n*m);
+		return;
+	}
+	if(x > n*m-1 || x < 0){ 
+		printf("Error: row coordinate is not in range 1 - %d\n",n*m);
 		return;
 	}
 	if(has_error(b,n,m)){
@@ -356,12 +357,12 @@ void guess_hint(Board b, int n, int m, int x, int y){
 	/*user enters 1- based coor*/
 	x--;
 	y--;
-	if(x > n*m-1 || x < 0){ 
-		printf("Error: row coordinate is not in range 1 - %d\n",n*m);
-		return;
-	}
 	if(y > n*m-1 || y < 0){
 		printf("Error: column coordinate is not in range 1 - %d\n",n*m);
+		return;
+	}
+	if(x > n*m-1 || x < 0){ 
+		printf("Error: row coordinate is not in range 1 - %d\n",n*m);
 		return;
 	}
 	if(has_error(b,n,m)){

@@ -58,7 +58,6 @@ bool LP_guess(Board B, int n, int m, float X, list *lst){
 	copyboard(B,n,m,cpy_board);
 	s = LP_guesser(cpy_board,n,m,X);
 	if (s){
-		/*undo*/
 		new_move(lst);
 		for(i = 0; i < (n*m); i++){
 			for(j = 0; j < (n*m); j++){
@@ -68,7 +67,6 @@ bool LP_guess(Board B, int n, int m, float X, list *lst){
 				}
 			}
 		}
-		/*copyboard(cpy_board, n, m, B);*/
 	} else{
 		printf("Guess failed!\n");
 	}
@@ -77,10 +75,16 @@ bool LP_guess(Board B, int n, int m, float X, list *lst){
 }
 
 bool LP_guess_hint(Board B, int n, int m, int X, int Y){
-	if (!LP_guess_hinter(B,n,m,X,Y)){
+	cpy_board = makeBoard(cpy_board,n,m);
+	copyboard(B,n,m,cpy_board);
+
+	
+	if (!LP_guess_hinter(cpy_board,n,m,X,Y)){
 		printf("Guess_hint failed: the board is unsolvable\n");
+		deleteBoard(cpy_board,n ,m);
 		return false;
 	}
+	deleteBoard(cpy_board,n ,m);
 	return true;
 }
 
@@ -163,10 +167,8 @@ void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
 
     /*insert into empty_cells array indexs of all empty cells in the board. return c = #empty cells*/
 	c = find_empty_cells(B,n,m, cells_index);
-	printf("num of empty cells %d\n",c);
-
 	if (X > c){
-		printf("Error:: %d is larger then numer of empty cells\n",X);	
+		printf("Error: %d is larger then numer of empty cells\n",X);	
 		/*free resources*/
 		goto END;
 	} 
@@ -192,7 +194,7 @@ void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
 		copyboard(B,n,m,cpy_board);
 	}
 	if((X == 0) && (!ILP_solve(cpy_board,n,m,true))){
-		printf("Error: generate failed!\n" );
+		printf("Error: generate failed! the board is unsolvable\n" );
 		goto END;
 	}
 	/*undo*/
@@ -240,9 +242,7 @@ void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
 				}
 			}
 		}
-	}
-		draw_board(n,m,cpy_board, true);/*delete later!!!!!!!!!!*/
- 	
+	} 	
  	mark_wrong_cells(B,n,m);
 	
 	END:
