@@ -114,7 +114,7 @@ void check_game_over(Board *b,int n,int m, int *modep, list *lst){
 }
 
 /***************command funcs***************/
-void markErrors(int x, int *modep){
+void markErrors(int x/*, int *modep*/){
 	if(x==1){
 		mark_errors = true;
 		return;
@@ -227,7 +227,7 @@ void set_command(Board *b, int x, int y, int z,int n, int m, int *modep, list *l
 	}
 }
 
-void validate(Board b, int n, int m, int mode){
+void validate(Board b, int n, int m){
 	if(has_error(b,n,m)){
 		printf("Error: Board is erroneous. can not validate\n");
 		return;
@@ -239,35 +239,36 @@ void validate(Board b, int n, int m, int mode){
 	}
 }
 
-void guess(Board b, int n, int m, int mode , list* lst, float x){
+void guess(Board b, int n, int m, /*int *modep,*/ list* lst, float x){
+	if((x < 0) || (x > 1)){
+		printf("Error: value is not in range 0 - 1\n");
+		return;
+	}
 	if(has_error(b,n,m)){
 		printf("Error: Board is erroneous. can not guess\n");
 		return;
 	}
-	/*/guess;need to add changes to undo_lst*/
 	printf("float in lp guess %2.1f\n",x);
 	LP_guess(b, n, m, x, lst);
 	draw_board(n, m, b, false); /* delete this draw? */
-	/*/if need to - check_game_over(b, n,m, modep, lst);*/
+	/*check_game_over(b, n,m, modep, lst);*/
 }
 
-void generate(Board b, int n, int m, int mode , int i, int j, list* lst){
+void generate(Board b, int n, int m, int i, int j, list* lst){
 	if((i < 0) || (i > (n*m*n*m))) {
 		printf("Error: %d not in range 0 - %d\n", i,n*m*n*m);
 		return;
 	}
 	if((j < 0) || (j > (n*m*n*m))) {
-		printf("Error: %d not in range  0 - %d\n", i,n*m*n*m);
+		printf("Error: %d not in range  0 - %d\n", j,n*m*n*m);
 		return;
 	}
 	if(has_error(b,n,m)){
 		printf("Error: Board is erroneous. can not generate\n");
 		return;
 	}
-	/*/generate ;need to add changes to undo_lst*/
 	ILP_generate(b,n,m,i,j,lst);
 	draw_board(n, m, b, false);
-	/*/if need to - check_game_over(b, n,m, modep, lst);*/
 }
 
 void undo_command(Board b,int n, int m, int mode, list* lst){
@@ -315,7 +316,7 @@ void save_command(char *filepath, Board b, int n, int m, int mode){
 	}
 }
 
-void hint(Board b, int n, int m, int mode, int x, int y){
+void hint(Board b, int n, int m, int x, int y){
 	/*user enters 1- based coor*/
 	x--;
 	y--;
@@ -343,7 +344,7 @@ void hint(Board b, int n, int m, int mode, int x, int y){
 	ILP_hint(b, n, m, x, y);	
 }
 
-void guess_hint(Board b, int n, int m, int mode, int x, int y){
+void guess_hint(Board b, int n, int m, int x, int y){
 	/*user enters 1- based coor*/
 	x--;
 	y--;
@@ -371,7 +372,7 @@ void guess_hint(Board b, int n, int m, int mode, int x, int y){
 	LP_guess_hint(b, n, m, x, y);
 }
 
-void num_solutions(Board b, int n, int m, int mode){
+void num_solutions(Board b, int n, int m){
 	if(has_error(b,n,m)){
 		printf("Error: Board is erroneous. can not count solutions\n");
 		return;

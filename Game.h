@@ -21,4 +21,7 @@ bool has_error(Board B,int n,int m);
 
 void mark_wrong_cells(Board B, int n, int m);
 
+bool has_single_val(Board B,int row,int col,int *val, int n, int m);
+
+
 #endif

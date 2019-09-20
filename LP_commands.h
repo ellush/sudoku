@@ -1,3 +1,6 @@
+#ifndef LP_COMMANDS_H
+#define LP_COMMANDS_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -21,3 +24,5 @@ bool solve_ILP(Board B, int n, int m);
 void copyboard(Board B, int n, int m, Board cpy_board);
 
 void ILP_generate(Board B, int n, int m,  int X, int Y, list *lst);
+
+#endif

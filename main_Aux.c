@@ -22,7 +22,7 @@ void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 			break;
 		
 		case MARK_ERRORS:
-			markErrors(command[1], modep);
+			markErrors(command[1]);
 			break;
 			
 		case PRINT_BOARD:
@@ -35,17 +35,15 @@ void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 		
 		case VALIDATE:
 			/*/command needs work;*/
-			validate(*b, *np, *mp, *modep);
+			validate(*b, *np, *mp);
 			break;
 		
 		case GUESS:
-			/*/command needs work;*/
-			guess(*b, *np, *mp, *modep, undo_lst, f);
+			guess(*b, *np, *mp, /*modep,*/undo_lst, f);
 			break;
 		
 		case GENERATE:
-			/*/command needs work;*/
-			generate(*b, *np, *mp, *modep, command[1],command[2], undo_lst);
+			generate(*b, *np, *mp, command[1],command[2], undo_lst);
 			break;
 		
 		case UNDO:
@@ -61,17 +59,15 @@ void play_game(Board *b, int *modep,int *np, int *mp, list *undo_lst){
 			break;
 		
 		case HINT:
-			/*/command needs work;*/
-			hint(*b, *np, *mp, *modep, command[1],command[2]);
+			hint(*b, *np, *mp, command[1],command[2]);
 			break;
 		
 		case GUESS_HINT:
-			/*/command needs work;*/
-			guess_hint(*b, *np, *mp, *modep, command[1],command[2]);
+			guess_hint(*b, *np, *mp, command[1],command[2]);
 			break;
 		
 		case NUM_SOLUTIONS:
-			num_solutions(*b, *np, *mp, *modep);
+			num_solutions(*b, *np, *mp);
 			break;
 		
 		case AUTOFILL:

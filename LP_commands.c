@@ -188,8 +188,10 @@ void ILP_generate(Board B, int n, int m, int X, int Y, list *lst){
 	if (iter_count == 1000){
 		printf("Error: generate failed!, tried 1000 iterations\n" );
 		goto END;
+	} else if( X == 0){
+		copyboard(B,n,m,cpy_board);
 	}
-	if(X == 0 && !ILP_solve(cpy_board,n,m,true)){
+	if((X == 0) && (!ILP_solve(cpy_board,n,m,true))){
 		printf("Error: generate failed!\n" );
 		goto END;
 	}

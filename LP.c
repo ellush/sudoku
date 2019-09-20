@@ -5,21 +5,21 @@
 #include "Game_board.h"
 #include "gurobi_c.h"
 #include "Game.h"
+#include "Commands.h"
 
 /* LPILP_autfill is recursive. Returns false once no remaining cells can be auto-filled.*/
 bool LPILP_autofill(Board B, int n, int m){
 	
 	int i,j,v;
 	bool filled = false;
-	
-	printf("In autofill");
+		
 	for(i=0; i < n*m; i++){
 		for(j=0; j< n*m; j++){
 			if(B[i][j].num == 0){
 				if(has_single_val(B,i,j,&v,n,m)){
 					B[i][j].num = v;
 					filled = true;
-					printf("Autofill: Set %d in cell <%d,%d>\n",v, i+1,j+1); 
+					printf("Autofill: Set %d in cell <%d,%d>\n",v, i+1,j+1); 		/* delete */
 				}
 			}
 		}
@@ -30,11 +30,6 @@ bool LPILP_autofill(Board B, int n, int m){
 	else
 		return false;
 }
-
-bool LP_preprocess(Board B, int n, int m){
-	
-}
-
 
 int map_variables(Board B, int n, int m, int dof_map[]){
 	
@@ -123,7 +118,8 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 
 		/* set objective function */
 		obj = (double*)malloc(dof_count * sizeof(double));
-		
+
+		/* Randomize weights */
 		for (i = 0; i < dof_count; i++)
 			obj[i] = rand() % (3*BOARDSIZE) + 1;
 
@@ -247,7 +243,8 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 	if (error) goto QUIT;
 
 	/*  debug constrains */
-	GRBupdatemodel(model);
+	error = GRBupdatemodel(model);
+	if (error) goto QUIT;
 	GRBwrite(model,"debug.lp");	
 
 	/* Optimize model */
@@ -274,39 +271,10 @@ bool LPILP_solver(int n, int m, int dof_map[], int dof_count, double sol[], bool
 		/* dof_count id the number of variables, the size of "sol" should match */
 		error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, dof_count, sol);
 		if (error) goto QUIT;
-
-	/*  printf("Optimal objective: %.4e\n", objval); */		
-		/* printf("\n~~~~ Begining ILP Solver Debug ~~~~~:\n");
-		printf("\nOriginal board:\n");
-		for (i = 0; i < BOARDSIZE; i++) {
-			for (j = 0; j < BOARDSIZE; j++) {
-				if (B[i][j].num-1 < 0)
-					printf("x ");
-				else
-					printf("%d ", B[i][j].num );
-			}
-			printf("\n");
-		}
-		printf("\nSolution:\n");
-		for (i = 0; i < BOARDSIZE; i++) {
-			for (j = 0; j < BOARDSIZE; j++) {
-				if (B[i][j].num-1 < 0)
-					for (v = 0; v < BOARDSIZE; v++) {
-						if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v])          
-							if (sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ]>0) {								
-								printf("%d ", v+1);
-							}
-					}
-				else
-				printf("%d ", B[i][j].num );
-			}
-			printf("\n");
-		}
-		printf("\n~~~~ End of ILP Solver Debug ~~~~~:\n"); */	
 		
 		/* Write model solution' */
 		GRBupdatemodel(model);
-		error = GRBwrite(model, "sudoku.sol");
+		error = GRBwrite(model, "debug.sol");
 
 		success = true;
 
@@ -360,16 +328,9 @@ bool ILP_solve(Board B, int n, int m, bool apply){
 	float score;
 
 	/* Assumption: The board has no errors at this stage. Verified by the calling function. */
+	
 	/* Autofill */
-	LPILP_autofill(B, n, m);
-
-	/* Check and mark errors */
-/* 	mark_wrong_cells(B,n,m);
- */
-	/* Check if board is full with valid solution */
-	/* if ( has_error(B,n,m) ) {
-		success = false;
-	} else  */
+	LPILP_autofill(B, n, m);	
 	
 	if ( !has_empty_cell(B,n,m) ) {
 		success = true; /* Board is full and valid */
@@ -417,69 +378,83 @@ bool LP_guesser(Board B, int n, int m, float X){
 	float *scores = NULL;
 	bool success;
 
+	/* Assumption: The board has no errors at this stage. Verified by the calling function. */
+
 	/* Autofill */
 	LPILP_autofill(B, n, m);
-	
-	/* Count and create a mapping of the variables to be solved for */
-	dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
-	dof_count = map_variables(B, n, m, dof_map);
 
-	/* Allocate memory for the solution vector: */
-	sol = (double*)malloc(dof_count * sizeof(double));
+	if ( !has_empty_cell(B,n,m) ) {
+		success = true; /* Board is full and valid */
+	} else {
+		/* Run solver for partially empty and valid board*/
 
-	success = LP_solver(n, m, dof_map, dof_count, sol);
+		/* Count and create a mapping of the variables to be solved for */
+		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
+		dof_count = map_variables(B, n, m, dof_map);
 
-	printf("Listing possible values:\n"); /* delete */
+		/* Allocate memory for the solution vector: */
+		sol = (double*)malloc(dof_count * sizeof(double));
 
-	if (success) {
-		
-		/* Allocate array for scores and values */
-		scores =(float*)malloc(BOARDSIZE*2*sizeof(float)); 
+		success = LP_solver(n, m, dof_map, dof_count, sol);
 
-		for (i = 0; i < BOARDSIZE; i++) {
-			for (j = 0; j < BOARDSIZE; j++) {
-				if (B[i][j].num-1 < 0) {						
-					printf("cell <%d,%d>:",i+1,j+1); /* delete */
+		printf("Listing possible values:\n"); /* delete */
 
-					/* Find and count all legal values in B[i][j]: */
-					k=0; sum_of_weights=0; num_choices=0;
-					for (v = 0; v < BOARDSIZE; v++) {
-						if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] && is_legal_placement(B, i, j, v+1, n, m) ){
-							score = sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ];
-							if (score > 0)						/* delete */
-								printf("\033[1;32m");			/* delete */
-							printf("| %d - %2.1f ",v+1,score); 	/* delete */
-							printf("\033[0m");					/* delete */
-							if (score>=X) {
-								num_choices++;						
-								sum_of_weights += score*100;								 
-								*(scores+2*k) = score; 	/* store score */
-								*(scores+2*k+1) = v+1; 	/* store value */
-								k++;																	
-							}
-						}							
-					}
+		if (success) {
+			
+			/* Allocate array for scores and values */
+			scores =(float*)malloc(BOARDSIZE*2*sizeof(float)); 
 
-					printf("\n");				
+			for (i = 0; i < BOARDSIZE; i++) {
+				for (j = 0; j < BOARDSIZE; j++) {
+					if (B[i][j].num-1 < 0) {						
+						printf("cell <%d,%d>:",i+1,j+1); /* delete */
 
-					/* printf("sum_of_weights: %2.1f\n",sum_of_weights); */
-
-					/* Choose one of the legal value options for B[i][j]: */
-
-					/* Generate a random number from 0 and smaller than sum_of_weights */
-					if ( sum_of_weights > 0 )
-						rnd = rand()%((int) sum_of_weights);
-
-					for(k=0; k<num_choices; k++) {						
-						choice = (int) *(scores+2*k+1);
-						if( rnd/100 < *(scores+2*k) && is_legal_placement(B, i, j, choice, n, m) ){							
-							B[i][j].num = choice;
-							printf("Chose: %d from %d choices (sum_of_weights=%2.1f) \n",choice,num_choices,sum_of_weights);
+						/* Find and count all legal values in B[i][j]: */
+						k=0; sum_of_weights=0; num_choices=0;
+						for (v = 0; v < BOARDSIZE; v++) {
+							if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] && is_legal_placement(B, i, j, v+1, n, m) ){
+								score = sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ];
+								if (score > 0)						/* delete */
+									printf("\033[1;32m");			/* delete */
+								printf("| %d - %3.2f ",v+1,score); 	/* delete */
+								printf("\033[0m");					/* delete */
+								if (score>=X) {
+									num_choices++;						
+									sum_of_weights += score*100;								 
+									scores[2*k] = score; 	/* store score */
+									scores[2*k+1] = v+1; 	/* store value */
+									k++;																	
+								}
+							}							
 						}
-						rnd -= (int) *(scores+2*k)*100;
+
+						printf("\n");				
+
+						/* Choose one of the legal value options for B[i][j]: */
+
+						printf("Number of choices: %d \n",num_choices);
+
+						/* Generate a random number from 0 and smaller than sum_of_weights */
+						if ( num_choices>0 && sum_of_weights > 0 ){
+							rnd = rand()%((int) sum_of_weights);
+						}
+
+						k=0;
+						while (k<num_choices) {
+							choice = (int) scores[2*k+1];
+							/* printf("rnd = %d\n",rnd); */			/* delete */
+							if( ( rnd < (int) (scores[2*k]*100) ) && is_legal_placement(B, i, j, choice, n, m) ){							
+								B[i][j].num = choice;
+								/* printf("Chose: %d from %d choices (sum_of_weights=%2.1f, rnd/100=%2.1f) \n",choice,num_choices,sum_of_weights, (float)rnd/100 ); */
+								k = num_choices; /* end loop */
+							} else {
+								rnd -= (int) (scores[2*k]*100);
+								k++;
+							}
+						}
 					}
-				}
-			}		
+				}		
+			}
 		}
 	}
 
@@ -498,32 +473,39 @@ bool LP_guess_hinter(Board B, int n, int m, int i, int j){
 	bool success;
 	float score;
 
-	printf("cell <%d,%d>:\n",i+1,j+1);
+	/* Assumption: The board has no errors at this stage. Verified by the calling function. */
 
 	/* Autofill */
-	/* LPILP_autofill(B, n, m); */
-	
-	/* Count and create a mapping of the variables to be solved for */
-	dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
-	dof_count = map_variables(B, n, m, dof_map);
+	LPILP_autofill(B, n, m);
 
-	/* Allocate memory for the solution vector: */
-	sol = (double*)malloc(dof_count * sizeof(double));
+	printf("Legal values for cell <%d,%d>:\n",i+1,j+1);
+
+	if(has_single_val(B,i,j,&v,n,m)){
+		printf("Single value: %d\n",v);
+		success = true;
+	} else {
 	
-	success = LP_solver(n, m, dof_map, dof_count, sol);
-	
-	if (success) {		
-		if (B[i][j].num-1 < 0) {
-			printf("Legal values for cell <%d,%d>:\n",i+1,j+1);
-			for (v = 0; v < BOARDSIZE; v++) {				
-				if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v]) {
-					score = sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ];
-					if (score>0) {			
-						printf("value: %d, score:%2.1f\n",v+1,score);											
+		/* Count and create a mapping of the variables to be solved for */
+		dof_map = (int*)malloc(BOARDSIZE*BOARDSIZE*BOARDSIZE * sizeof(int));
+		dof_count = map_variables(B, n, m, dof_map);
+
+		/* Allocate memory for the solution vector: */
+		sol = (double*)malloc(dof_count * sizeof(double));
+		
+		success = LP_solver(n, m, dof_map, dof_count, sol);
+		
+		if (success) {		
+			if (B[i][j].num-1 < 0) {			
+				for (v = 0; v < BOARDSIZE; v++) {				
+					if (dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v]) {
+						score = sol[ (int) dof_map[i*BOARDSIZE*BOARDSIZE+j*BOARDSIZE+v] - 1 ];
+						if (score>0) {			
+							printf("Value: %d, score:%3.2f\n",v+1,score);											
+						}
 					}
 				}
-			}
-		} 
+			} 
+		}
 	}
 
 	/* Free memory solution vector */	
